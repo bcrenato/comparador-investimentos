@@ -104,7 +104,7 @@
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            width: 300px;
+            width: 310px;
             overflow: hidden;
             border-top: 5px solid var(--primary-color);
         }
@@ -152,7 +152,7 @@
         .result-row {
             display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             margin-bottom: 6px;
         }
 
@@ -160,11 +160,19 @@
             font-weight: bold;
         }
 
+        .highlight-mensal {
+            background-color: #f0f4f8;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #d2dce6;
+        }
+
         .highlight-liquido {
             background-color: #e6f9ed;
             padding: 8px;
             border-radius: 6px;
-            margin-top: 10px;
+            margin-top: 8px;
             border: 1px solid var(--accent-color);
         }
 
@@ -174,7 +182,7 @@
         }
 
         .highlight-dif {
-            background-color: #eef2f7;
+            background-color: #f8fafc;
             padding: 6px 8px;
             border-radius: 6px;
             margin-top: 6px;
@@ -219,7 +227,6 @@
         </div>
     </header>
 
-    <!-- Quadro de Controles Globais -->
     <div class="global-controls">
         <div class="global-group">
             <label>Valor Investido (R$)</label>
@@ -231,10 +238,8 @@
         </div>
     </div>
 
-    <!-- Cards de Cenários de Rentabilidade -->
     <div class="container" id="cards-container">
-        <!-- Inserido via JavaScript -->
-    </div>
+        </div>
 
     <div class="btn-acoes">
         <button class="btn-acao" onclick="adicionarCard()">+ Adicionar Cenário</button>
@@ -281,8 +286,10 @@
 
                             <div class="result-group">
                                 <div class="result-row"><span>Rent. a.a:</span> <span id="res-rent-aa-${index}">-</span></div>
+                                <div class="result-row highlight-mensal"><span>Rent. a.m:</span> <span id="res-rent-am-${index}">-</span></div>
                                 <div class="result-row"><span>Valor Bruto:</span> <span id="res-bruto-${index}">-</span></div>
                                 <div class="result-row"><span>Rendimentos:</span> <span id="res-lucro-${index}">-</span></div>
+                                <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-mensal-val-${index}">-</span></div>
                                 <div class="result-row"><span>Alíquota IR:</span> <span id="res-ir-aliq-${index}">-</span></div>
                                 <div class="result-row"><span>R$ Imposto:</span> <span id="res-ir-val-${index}">-</span></div>
                                 <div class="result-row highlight-liquido"><span>Valor Líquido:</span> <span id="res-liquido-${index}">-</span></div>
@@ -328,18 +335,20 @@
             const valorInvestido = !isNaN(valorInvestidoInput) ? valorInvestidoInput : 0;
 
             const mesesInput = parseInt(document.getElementById('global-meses').value);
-            const meses = !isNaN(mesesInput) ? mesesInput : 0;
+            const meses = !isNaN(mesesInput) && mesesInput > 0 ? mesesInput : 1;
 
             let valorLiquidoBase = 0;
-
-            // Primeiro loop calcula todos os valores líquidos
             let liquidosArray = [];
+
             dadosIniciais.forEach((dado, index) => {
                 const rentInput = document.getElementById(`rent-${index}`);
                 if (!rentInput) return;
 
                 const rentPct = parseFloat(rentInput.value) / 100 || 0;
                 const rentAa = cdiAnual * rentPct;
+
+                // Cálculo da taxa mensal composta: (1 + a.a.)^(1/12) - 1
+                const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
 
                 const valorBruto = valorInvestido * Math.pow((1 + rentAa), (meses / 12));
                 const rendimentos = valorBruto - valorInvestido;
@@ -351,22 +360,29 @@
 
                 const valorImposto = rendimentos * aliquotaIR;
                 const valorLiquido = valorBruto - valorImposto;
+                
+                // Média de rendimento líquido gerado por mês
+                const ganhoLiquidoTotal = valorLiquido - valorInvestido;
+                const valorMedioMensal = ganhoLiquidoTotal / meses;
+
                 liquidosArray.push(valorLiquido);
 
                 if (index === 0) {
                     valorLiquidoBase = valorLiquido;
                 }
 
-                // Exibir dados normais
+                // Preencher campos na tela
                 document.getElementById(`res-rent-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
+                document.getElementById(`res-rent-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
                 document.getElementById(`res-bruto-${index}`).innerText = valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-lucro-${index}`).innerText = rendimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-mensal-val-${index}`).innerText = valorMedioMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-ir-aliq-${index}`).innerText = (aliquotaIR * 100) + '%';
                 document.getElementById(`res-ir-val-${index}`).innerText = valorImposto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-liquido-${index}`).innerText = valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             });
 
-            // Segundo loop calcula a diferença em relação ao Cenário 1
+            // Loop para as diferenças em relação ao Cenário 1
             dadosIniciais.forEach((_, index) => {
                 if (index > 0) {
                     const dif = liquidosArray[index] - valorLiquidoBase;
