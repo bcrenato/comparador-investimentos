@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparador de CDBs</title>
+    <title>Comparador de Investimentos: CDB vs LCI/LCA</title>
     <style>
         :root {
             --primary-color: #1b365d;
@@ -30,6 +30,40 @@
         h1 {
             color: var(--primary-color);
             margin-bottom: 5px;
+        }
+
+        /* Sistema de Abas */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            background: #cbd5e1;
+            color: #334155;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .taxa-base-box {
@@ -189,6 +223,16 @@
             border: 1px solid #cbd5e1;
         }
 
+        .badge-melhor {
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            border-radius: 6px;
+            margin-top: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
         .btn-acoes {
             display: flex;
             justify-content: center;
@@ -220,39 +264,88 @@
 <body>
 
     <header>
-        <h1>Comparador de CDBs</h1>
+        <h1>Comparador de Investimentos</h1>
         <div class="taxa-base-box">
             CDI Anual: <input type="number" step="0.01" id="input-cdi" value="14.90" oninput="calcularTudo()">% a.a.
             <span id="status-bc" style="font-size: 0.75rem; color: #555; display: block; margin-top: 2px;">(Carregando do BCB...)</span>
         </div>
     </header>
 
-    <div class="global-controls">
-        <div class="global-group">
-            <label>Valor Investido (R$)</label>
-            <input type="number" step="1000" id="global-valor" value="50000" oninput="calcularTudo()">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="mudarAba('cdb')">Comparar CDBs</button>
+        <button class="tab-btn" onclick="mudarAba('lci')">Comparar CDB vs LCI/LCA</button>
+    </div>
+
+    <div id="tab-cdb" class="tab-content active">
+        <div class="global-controls">
+            <div class="global-group">
+                <label>Valor Investido (R$)</label>
+                <input type="number" step="1000" id="global-valor-cdb" value="50000" oninput="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Prazo (Meses)</label>
+                <input type="number" id="global-meses-cdb" value="12" oninput="calcularTudo()">
+            </div>
         </div>
-        <div class="global-group">
-            <label>Prazo (Meses)</label>
-            <input type="number" id="global-meses" value="12" oninput="calcularTudo()">
+
+        <div class="container" id="cards-container-cdb"></div>
+
+        <div class="btn-acoes">
+            <button class="btn-acao" onclick="adicionarCardCdb()">+ Adicionar Cenário</button>
+            <button class="btn-acao btn-remover" onclick="removerCardCdb()" id="btn-rem-cdb" style="display:none;">- Remover Último</button>
         </div>
     </div>
 
-    <div class="container" id="cards-container">
+    <div id="tab-lci" class="tab-content">
+        <div class="global-controls">
+            <div class="global-group">
+                <label>Valor Investido (R$)</label>
+                <input type="number" step="1000" id="global-valor-lci" value="50000" oninput="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Prazo (Meses)</label>
+                <input type="number" id="global-meses-lci" value="12" oninput="calcularTudo()">
+            </div>
         </div>
 
-    <div class="btn-acoes">
-        <button class="btn-acao" onclick="adicionarCard()">+ Adicionar Cenário</button>
-        <button class="btn-acao btn-remover" onclick="removerCard()" id="btn-rem" style="display:none;">- Remover Último</button>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-block; background: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid var(--primary-color);">
+                <label style="font-size: 0.85rem; color: #666; font-weight: bold; display: block; margin-bottom: 4px;">Seu CDB de Referência (% do CDI)</label>
+                <input type="number" step="0.5" id="cdb-base-rent" value="110" oninput="calcularTudo()" style="padding: 6px; font-weight: bold; width: 100px; text-align: center; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; color: var(--primary-color);">
+            </div>
+        </div>
+
+        <div class="container" id="cards-container-lci"></div>
     </div>
 
     <script>
-        // Cenário 1 fixado em 100% do CDI como base
-        let dadosIniciais = [
+        let dadosCdb = [
             { rent: 100 },
             { rent: 105 },
             { rent: 110 }
         ];
+
+        let dadosLci = [
+            { label: "LCI / LCA 80%", pct: 80 },
+            { label: "LCI / LCA 86%", pct: 86 },
+            { label: "LCI / LCA 88%", pct: 88 },
+            { label: "LCI / LCA 90%", pct: 90 },
+            { label: "LCI / LCA 93%", pct: 93 }
+        ];
+
+        function mudarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (aba === 'cdb') {
+                document.getElementById('tab-cdb').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('tab-lci').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+            calcularTudo();
+        }
 
         async function buscarCDI() {
             try {
@@ -270,60 +363,80 @@
             }
         }
 
-        function renderizarCards() {
-            const container = document.getElementById('cards-container');
-            container.innerHTML = '';
-
-            dadosIniciais.forEach((dado, index) => {
-                const cardHTML = `
-                    <div class="card" id="card-${index}">
+        function renderizarTudo() {
+            // Renderizar Aba CDB
+            const containerCdb = document.getElementById('cards-container-cdb');
+            containerCdb.innerHTML = '';
+            dadosCdb.forEach((dado, index) => {
+                containerCdb.innerHTML += `
+                    <div class="card">
                         <div class="card-header">CDB Cenário ${index + 1}</div>
                         <div class="card-body">
                             <div class="input-group">
                                 <label>Rentabilidade (% do CDI)</label>
-                                <input type="number" step="0.5" value="${dado.rent}" id="rent-${index}" oninput="atualizarEstadoERecalcular()">
+                                <input type="number" step="0.5" value="${dado.rent}" id="rent-cdb-${index}" oninput="atualizarEstadoCdb()">
                             </div>
-
                             <div class="result-group">
-                                <div class="result-row"><span>Rent. a.a:</span> <span id="res-rent-aa-${index}">-</span></div>
-                                <div class="result-row highlight-mensal"><span>Rent. a.m:</span> <span id="res-rent-am-${index}">-</span></div>
-                                <div class="result-row"><span>Valor Bruto:</span> <span id="res-bruto-${index}">-</span></div>
-                                <div class="result-row"><span>Rendimentos:</span> <span id="res-lucro-${index}">-</span></div>
-                                <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-mensal-val-${index}">-</span></div>
-                                <div class="result-row"><span>Alíquota IR:</span> <span id="res-ir-aliq-${index}">-</span></div>
-                                <div class="result-row"><span>R$ Imposto:</span> <span id="res-ir-val-${index}">-</span></div>
-                                <div class="result-row highlight-liquido"><span>Valor Líquido:</span> <span id="res-liquido-${index}">-</span></div>
-                                <div class="result-row highlight-dif" id="box-dif-${index}" style="${index === 0 ? 'display:none;' : ''}">
-                                    <span id="label-dif-${index}">Dif. p/ Cenário 1:</span> <span id="res-dif-${index}">-</span>
+                                <div class="result-row"><span>Rent. a.a:</span> <span id="res-cdb-aa-${index}">-</span></div>
+                                <div class="result-row highlight-mensal"><span>Rent. a.m:</span> <span id="res-cdb-am-${index}">-</span></div>
+                                <div class="result-row"><span>Valor Bruto:</span> <span id="res-cdb-bruto-${index}">-</span></div>
+                                <div class="result-row"><span>Rendimentos:</span> <span id="res-cdb-lucro-${index}">-</span></div>
+                                <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cdb-mensal-${index}">-</span></div>
+                                <div class="result-row"><span>Alíquota IR:</span> <span id="res-cdb-ir-aliq-${index}">-</span></div>
+                                <div class="result-row"><span>R$ Imposto:</span> <span id="res-cdb-ir-val-${index}">-</span></div>
+                                <div class="result-row highlight-liquido"><span>Valor Líquido:</span> <span id="res-cdb-liquido-${index}">-</span></div>
+                                <div class="result-row highlight-dif" id="box-cdb-dif-${index}" style="${index === 0 ? 'display:none;' : ''}">
+                                    <span>Dif. p/ Cenário 1:</span> <span id="res-cdb-dif-${index}">-</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
-                container.innerHTML += cardHTML;
+            });
+            document.getElementById('btn-rem-cdb').style.display = dadosCdb.length > 1 ? 'inline-block' : 'none';
+
+            // Renderizar Aba LCI/LCA
+            const containerLci = document.getElementById('cards-container-lci');
+            containerLci.innerHTML = '';
+            dadosLci.forEach((dado, index) => {
+                containerLci.innerHTML += `
+                    <div class="card" style="border-top-color: #0284c7;">
+                        <div class="card-header" style="background: #0284c7;">${dado.label}</div>
+                        <div class="card-body">
+                            <div class="result-group" style="margin-top: 0; border-top: none;">
+                                <div class="result-row"><span>Rent. a.a:</span> <span id="res-lci-aa-${index}">-</span></div>
+                                <div class="result-row highlight-mensal"><span>Rent. a.m:</span> <span id="res-lci-am-${index}">-</span></div>
+                                <div class="result-row highlight-liquido" style="background-color: #e0f2fe; border-color: #0284c7;">
+                                    <span>Valor Líquido (Isento):</span> <span id="res-lci-liquido-${index}">-</span>
+                                </div>
+                                <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-lci-mensal-${index}">-</span></div>
+                                <div id="badge-melhor-${index}"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
 
-            document.getElementById('btn-rem').style.display = dadosIniciais.length > 1 ? 'inline-block' : 'none';
             calcularTudo();
         }
 
-        function atualizarEstadoERecalcular() {
-            dadosIniciais.forEach((dado, index) => {
-                const input = document.getElementById(`rent-${index}`);
+        function atualizarEstadoCdb() {
+            dadosCdb.forEach((dado, index) => {
+                const input = document.getElementById(`rent-cdb-${index}`);
                 if (input) dado.rent = parseFloat(input.value) || 0;
             });
             calcularTudo();
         }
 
-        function adicionarCard() {
-            dadosIniciais.push({ rent: 120 });
-            renderizarCards();
+        function adicionarCardCdb() {
+            dadosCdb.push({ rent: 115 });
+            renderizarTudo();
         }
 
-        function removerCard() {
-            if (dadosIniciais.length > 1) {
-                dadosIniciais.pop();
-                renderizarCards();
+        function removerCardCdb() {
+            if (dadosCdb.length > 1) {
+                dadosCdb.pop();
+                renderizarTudo();
             }
         }
 
@@ -331,65 +444,95 @@
             const cdiAnualInput = parseFloat(document.getElementById('input-cdi').value);
             const cdiAnual = !isNaN(cdiAnualInput) ? cdiAnualInput / 100 : 0.149;
 
-            const valorInvestidoInput = parseFloat(document.getElementById('global-valor').value);
-            const valorInvestido = !isNaN(valorInvestidoInput) ? valorInvestidoInput : 0;
+            // --- CÁLCULOS ABA CDB ---
+            const valorCdb = parseFloat(document.getElementById('global-valor-cdb').value) || 0;
+            const mesesCdb = parseInt(document.getElementById('global-meses-cdb').value) || 1;
 
-            const mesesInput = parseInt(document.getElementById('global-meses').value);
-            const meses = !isNaN(mesesInput) && mesesInput > 0 ? mesesInput : 1;
+            let liquidoCdbBase = 0;
+            let liquidosCdbArray = [];
 
-            let valorLiquidoBase = 0;
-            let liquidosArray = [];
-
-            dadosIniciais.forEach((dado, index) => {
-                const rentInput = document.getElementById(`rent-${index}`);
+            dadosCdb.forEach((dado, index) => {
+                const rentInput = document.getElementById(`rent-cdb-${index}`);
                 if (!rentInput) return;
-
                 const rentPct = parseFloat(rentInput.value) / 100 || 0;
                 const rentAa = cdiAnual * rentPct;
                 const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
 
-                const valorBruto = valorInvestido * Math.pow((1 + rentAa), (meses / 12));
-                const rendimentos = valorBruto - valorInvestido;
+                const bruto = valorCdb * Math.pow((1 + rentAa), (mesesCdb / 12));
+                const lucro = bruto - valorCdb;
 
                 let aliquotaIR = 0.15;
-                if (meses <= 6) aliquotaIR = 0.225;
-                else if (meses <= 12) aliquotaIR = 0.20;
-                else if (meses <= 24) aliquotaIR = 0.175;
+                if (mesesCdb <= 6) aliquotaIR = 0.225;
+                else if (mesesCdb <= 12) aliquotaIR = 0.20;
+                else if (mesesCdb <= 24) aliquotaIR = 0.175;
 
-                const valorImposto = rendimentos * aliquotaIR;
-                const valorLiquido = valorBruto - valorImposto;
-                
-                const ganhoLiquidoTotal = valorLiquido - valorInvestido;
-                const valorMedioMensal = ganhoLiquidoTotal / meses;
+                const imposto = lucro * aliquotaIR;
+                const liquido = bruto - imposto;
+                const medioMensal = (liquido - valorCdb) / mesesCdb;
 
-                liquidosArray.push(valorLiquido);
+                liquidosCdbArray.push(liquido);
+                if (index === 0) liquidoCdbBase = liquido;
 
-                if (index === 0) {
-                    valorLiquidoBase = valorLiquido;
-                }
-
-                document.getElementById(`res-rent-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
-                document.getElementById(`res-rent-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
-                document.getElementById(`res-bruto-${index}`).innerText = valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById(`res-lucro-${index}`).innerText = rendimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById(`res-mensal-val-${index}`).innerText = valorMedioMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById(`res-ir-aliq-${index}`).innerText = (aliquotaIR * 100) + '%';
-                document.getElementById(`res-ir-val-${index}`).innerText = valorImposto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById(`res-liquido-${index}`).innerText = valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
+                document.getElementById(`res-cdb-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
+                document.getElementById(`res-cdb-bruto-${index}`).innerText = bruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-lucro-${index}`).innerText = lucro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-mensal-${index}`).innerText = medioMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-ir-aliq-${index}`).innerText = (aliquotaIR * 100) + '%';
+                document.getElementById(`res-cdb-ir-val-${index}`).innerText = imposto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-liquido-${index}`).innerText = liquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             });
 
-            dadosIniciais.forEach((_, index) => {
+            dadosCdb.forEach((_, index) => {
                 if (index > 0) {
-                    const dif = liquidosArray[index] - valorLiquidoBase;
-                    const spanDif = document.getElementById(`res-dif-${index}`);
-                    const sinal = dif >= 0 ? "+ " : "- ";
-                    spanDif.innerText = sinal + Math.abs(dif).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    spanDif.style.color = dif >= 0 ? "#008742" : "#d93838";
+                    const dif = liquidosCdbArray[index] - liquidoCdbBase;
+                    const span = document.getElementById(`res-cdb-dif-${index}`);
+                    span.innerText = (dif >= 0 ? "+ " : "- ") + Math.abs(dif).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    span.style.color = dif >= 0 ? "#008742" : "#d93838";
+                }
+            });
+
+            // --- CÁLCULOS ABA LCI / LCA ---
+            const valorLci = parseFloat(document.getElementById('global-valor-lci').value) || 0;
+            const mesesLci = parseInt(document.getElementById('global-meses-lci').value) || 1;
+            const cdbBasePct = parseFloat(document.getElementById('cdb-base-rent').value) / 100 || 1.10;
+
+            // Calcular o rendimento líquido do CDB de referência
+            const rentCdbBaseAa = cdiAnual * cdbBasePct;
+            const brutoCdbRef = valorLci * Math.pow((1 + rentCdbBaseAa), (mesesLci / 12));
+            const lucroCdbRef = brutoCdbRef - valorLci;
+            let aliquotaRef = 0.15;
+            if (mesesLci <= 6) aliquotaRef = 0.225;
+            else if (mesesLci <= 12) aliquotaRef = 0.20;
+            else if (mesesLci <= 24) aliquotaRef = 0.175;
+            const liquidoCdbRef = brutoCdbRef - (lucroCdbRef * aliquotaRef);
+
+            dadosLci.forEach((dado, index) => {
+                const rentAa = cdiAnual * (dado.pct / 100);
+                const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
+                // LCI/LCA é isenta de IR
+                const liquidoLci = valorLci * Math.pow((1 + rentAa), (mesesLci / 12));
+                const medioMensalLci = (liquidoLci - valorLci) / mesesLci;
+
+                document.getElementById(`res-lci-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
+                document.getElementById(`res-lci-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
+                document.getElementById(`res-lci-liquido-${index}`).innerText = liquidoLci.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-lci-mensal-${index}`).innerText = medioMensalLci.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                const badgeDiv = document.getElementById(`badge-melhor-${index}`);
+                if (liquidoLci > liquidoCdbRef) {
+                    const diff = liquidoLci - liquidoCdbRef;
+                    badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #e6f9ed; color: #008742; border: 1px solid #00d26a;">✔ Melhor: LCI/LCA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
+                } else if (liquidoLci < liquidoCdbRef) {
+                    const diff = liquidoCdbRef - liquidoLci;
+                    badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;">✖ Melhor: Seu CDB (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
+                } else {
+                    badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #f1f5f9; color: #475569;">Empate exato</div>`;
                 }
             });
         }
 
-        renderizarCards();
+        renderizarTudo();
         buscarCDI();
     </script>
 </body>
