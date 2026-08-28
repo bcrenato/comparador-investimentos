@@ -173,6 +173,14 @@
             font-size: 1.05rem;
         }
 
+        .highlight-dif {
+            background-color: #eef2f7;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-top: 6px;
+            border: 1px solid #cbd5e1;
+        }
+
         .btn-acoes {
             display: flex;
             justify-content: center;
@@ -211,7 +219,7 @@
         </div>
     </header>
 
-    <!-- Quadro separado para Valor e Meses -->
+    <!-- Quadro de Controles Globais -->
     <div class="global-controls">
         <div class="global-group">
             <label>Valor Investido (R$)</label>
@@ -234,21 +242,20 @@
     </div>
 
     <script>
-        // Cenários iniciais
         let dadosIniciais = [
+            { rent: 120 },
             { rent: 100 },
             { rent: 105 },
-            { rent: 120 }
+            { rent: 110 }
         ];
 
-        // Tentar buscar do Banco Central em segundo plano
         async function buscarCDI() {
             try {
                 const response = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
                 const data = await response.json();
                 if (data && data.length > 0) {
                     let selic = parseFloat(data[0].valor);
-                    let cdi = selic - 0.10; // Subtrai 0.10% da Selic Meta para achar o CDI aproximado
+                    let cdi = selic - 0.10;
                     document.getElementById('input-cdi').value = cdi.toFixed(2);
                     document.getElementById('status-bc').innerText = "Atualizado do Banco Central";
                     calcularTudo();
@@ -279,6 +286,9 @@
                                 <div class="result-row"><span>Alíquota IR:</span> <span id="res-ir-aliq-${index}">-</span></div>
                                 <div class="result-row"><span>R$ Imposto:</span> <span id="res-ir-val-${index}">-</span></div>
                                 <div class="result-row highlight-liquido"><span>Valor Líquido:</span> <span id="res-liquido-${index}">-</span></div>
+                                <div class="result-row highlight-dif" id="box-dif-${index}" style="${index === 0 ? 'display:none;' : ''}">
+                                    <span id="label-dif-${index}">Dif. p/ Cenário 1:</span> <span id="res-dif-${index}">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -299,7 +309,7 @@
         }
 
         function adicionarCard() {
-            dadosIniciais.push({ rent: 110 });
+            dadosIniciais.push({ rent: 115 });
             renderizarCards();
         }
 
@@ -320,6 +330,10 @@
             const mesesInput = parseInt(document.getElementById('global-meses').value);
             const meses = !isNaN(mesesInput) ? mesesInput : 0;
 
+            let valorLiquidoBase = 0;
+
+            // Primeiro loop calcula todos os valores líquidos
+            let liquidosArray = [];
             dadosIniciais.forEach((dado, index) => {
                 const rentInput = document.getElementById(`rent-${index}`);
                 if (!rentInput) return;
@@ -327,11 +341,9 @@
                 const rentPct = parseFloat(rentInput.value) / 100 || 0;
                 const rentAa = cdiAnual * rentPct;
 
-                // Cálculo do valor bruto composto
                 const valorBruto = valorInvestido * Math.pow((1 + rentAa), (meses / 12));
                 const rendimentos = valorBruto - valorInvestido;
 
-                // Alíquota de IR Regressiva baseada no prazo global em meses
                 let aliquotaIR = 0.15;
                 if (meses <= 6) aliquotaIR = 0.225;
                 else if (meses <= 12) aliquotaIR = 0.20;
@@ -339,8 +351,13 @@
 
                 const valorImposto = rendimentos * aliquotaIR;
                 const valorLiquido = valorBruto - valorImposto;
+                liquidosArray.push(valorLiquido);
 
-                // Atualizar na tela com segurança
+                if (index === 0) {
+                    valorLiquidoBase = valorLiquido;
+                }
+
+                // Exibir dados normais
                 document.getElementById(`res-rent-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
                 document.getElementById(`res-bruto-${index}`).innerText = valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-lucro-${index}`).innerText = rendimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -348,9 +365,19 @@
                 document.getElementById(`res-ir-val-${index}`).innerText = valorImposto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-liquido-${index}`).innerText = valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             });
+
+            // Segundo loop calcula a diferença em relação ao Cenário 1
+            dadosIniciais.forEach((_, index) => {
+                if (index > 0) {
+                    const dif = liquidosArray[index] - valorLiquidoBase;
+                    const spanDif = document.getElementById(`res-dif-${index}`);
+                    const sinal = dif >= 0 ? "+ " : "- ";
+                    spanDif.innerText = sinal + Math.abs(dif).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    spanDif.style.color = dif >= 0 ? "#008742" : "#d93838";
+                }
+            });
         }
 
-        // Inicializar
         renderizarCards();
         buscarCDI();
     </script>
