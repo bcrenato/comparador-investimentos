@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Comparador de investimentos CDB, LCI/LCA e Tesouro Selic.">
+<title>Comparador de Investimentos — CDB x LCI/LCA x Tesouro Selic</title>
+<style>
+:root{
+  --primary:#1b365d;--secondary:#2c4c7c;--accent:#00d26a;
+  --bg:#f4f7f6;--card:#fff;--text:#333;--muted:#64748b;
+  --blue:#0284c7;--danger:#dc2626;--border:#d7dee7;
+}
+*{box-sizing:border-box}
+body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:18px}
+header{text-align:center;margin-bottom:18px}
+h1{color:var(--primary);margin:4px 0 6px;font-size:clamp(1.55rem,4vw,2.15rem)}
+.subtitle{color:var(--muted);font-size:.9rem}
+.rate-box{background:#e2e8f0;display:inline-block;padding:9px 15px;border-radius:20px;font-weight:700;color:var(--primary);margin-top:9px}
+.rate-box input{border:0;background:transparent;font-weight:700;color:var(--primary);width:72px;text-align:center;border-bottom:1px dashed var(--primary);font-size:.95rem}
+#status-bc{display:block;font-size:.72rem;color:#555;margin-top:3px}
+.tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 auto 20px;max-width:900px}
+.tab-btn{background:#cbd5e1;color:#334155;border:0;padding:10px 17px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.93rem}
+.tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 4px 10px #0002}
+.tab-content{display:none}.tab-content.active{display:block}
+.global-controls,.reference-box,.summary,.equivalence{
+ background:var(--card);max-width:760px;margin:0 auto 18px;padding:18px;border-radius:12px;
+ box-shadow:0 4px 15px #00000012;border-top:5px solid var(--secondary)
+}
+.global-controls{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field label{display:block;font-size:.82rem;color:#666;margin-bottom:5px;font-weight:700}
+.field input,.field select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;font-size:1rem;font-weight:700;color:var(--primary);background:#fff}
+.check{display:flex;gap:8px;align-items:center;font-size:.85rem;margin-top:8px;color:#475569}
+.container{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;max-width:1250px;margin:0 auto}
+.card{background:var(--card);border-radius:12px;box-shadow:0 4px 15px #00000012;width:315px;overflow:hidden;border-top:5px solid var(--primary)}
+.card-header{background:var(--primary);color:#fff;text-align:center;padding:12px;font-size:1.05rem;font-weight:700}
+.card-body{padding:15px}
+.input-group{margin-bottom:12px}.input-group label{display:block;font-size:.82rem;color:#666;margin-bottom:4px}
+.input-group input{width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;font-size:.95rem;font-weight:700}
+.result-group{margin-top:12px;border-top:1px dashed #ddd;padding-top:10px}
+.result-row{display:flex;justify-content:space-between;gap:12px;font-size:.86rem;margin-bottom:6px}
+.result-row span:last-child{font-weight:700;text-align:right}
+.highlight{background:#f0f4f8;padding:7px 8px;border-radius:6px;border:1px solid #d2dce6}
+.liquid{background:#e6f9ed;padding:8px;border-radius:6px;margin-top:7px;border:1px solid var(--accent)}
+.liquid span:last-child{color:#008742;font-size:1.05rem}
+.blue-liquid{background:#e0f2fe;border-color:var(--blue)}
+.blue-liquid span:last-child{color:#0369a1}
+.diff{background:#f8fafc;padding:7px 8px;border-radius:6px;border:1px solid #cbd5e1}
+.badge{text-align:center;padding:8px;font-weight:700;font-size:.86rem;border-radius:6px;margin-top:12px}
+.best{background:#e6f9ed;color:#008742;border:1px solid var(--accent)}
+.worse{background:#fef2f2;color:var(--danger);border:1px solid #fca5a5}
+.tie{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+.actions{text-align:center;margin:20px 0}
+.btn{background:var(--accent);color:#000;border:0;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;margin:3px}
+.btn-danger{background:#ff4d4d;color:#fff}
+.summary{border-top-color:var(--accent);max-width:900px}
+.summary h2,.equivalence h2{margin:0 0 10px;color:var(--primary);font-size:1.1rem}
+.summary-main{text-align:center;font-size:1.1rem;font-weight:700}
+.summary-value{font-size:1.55rem;color:#008742;margin:5px 0}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.summary-item{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:9px;text-align:center;font-size:.82rem}
+.summary-item strong{display:block;font-size:.98rem;margin-top:3px}
+.equiv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.equiv-result{padding:12px;border-radius:8px;background:#f8fafc;border:1px solid var(--border);text-align:center}
+.equiv-result strong{display:block;color:var(--primary);font-size:1.3rem;margin-top:4px}
+.note{max-width:900px;margin:15px auto;color:#64748b;font-size:.75rem;line-height:1.5;text-align:center}
+.table-wrap{overflow-x:auto;max-width:1100px;margin:0 auto 20px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 12px #0001}
+th,td{padding:9px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:.82rem;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th{background:var(--primary);color:#fff}
+.best-cell{font-weight:800;color:#008742}
+.small{font-size:.73rem;color:#64748b}
+@media(max-width:650px){
+ body{padding:10px}.global-controls,.equiv-grid{grid-template-columns:1fr}
+ .summary-grid{grid-template-columns:1fr}.card{width:100%;max-width:360px}
+ .tabs{gap:5px}.tab-btn{padding:9px 11px;font-size:.82rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Comparador de Investimentos</h1>
+  <div class="subtitle">CDB × LCI/LCA × Tesouro Selic</div>
+  <div class="rate-box">
+    CDI Anual:
+    <input type="number" step="0.01" id="input-cdi" value="14.90" oninput="calcularTudo()">
+    % a.a.
+    <span id="status-bc">(Carregando referência...)</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="mudarAba('cdb')">Comparar CDBs</button>
+  <button class="tab-btn" onclick="mudarAba('lci')">CDB × LCI/LCA</button>
+  <button class="tab-btn" onclick="mudarAba('tesouro')">Tesouro Selic</button>
+  <button class="tab-btn" onclick="mudarAba('equiv')">Equivalência</button>
+</div>
+
+<section id="tab-cdb" class="tab-content active">
+  <div class="global-controls">
+    <div class="field"><label>Valor investido (R$)</label><input type="number" step="100" id="global-valor-cdb" value="50000" oninput="calcularTudo()"></div>
+    <div class="field"><label>Prazo (meses)</label><input type="number" min="1" id="global-meses-cdb" value="12" oninput="calcularTudo()"></div>
+    <div class="field"><label>Taxa padrão de IR</label><select id="ir-mode-cdb" onchange="calcularTudo()"><option value="auto" selected>Automática pela quantidade de dias</option></select></div>
+    <div class="field"><label>IOF</label><select disabled><option>Aplicado automaticamente até 29 dias</option></select></div>
+  </div>
+  <div class="container" id="cards-container-cdb"></div>
+  <div class="actions">
+    <button class="btn" onclick="adicionarCardCdb()">+ Adicionar cenário</button>
+    <button class="btn btn-danger" onclick="removerCardCdb()" id="btn-rem-cdb" style="display:none">− Remover último</button>
+  </div>
+</section>
+
+<section id="tab-lci" class="tab-content">
+  <div class="global-controls">
+    <div class="field"><label>Valor investido (R$)</label><input type="number" step="100" id="global-valor-lci" value="50000" oninput="calcularTudo()"></div>
+    <div class="field"><label>Prazo (meses)</label><input type="number" min="1" id="global-meses-lci" value="12" oninput="calcularTudo()"></div>
+    <div class="field"><label>Seu CDB de referência (% do CDI)</label><input type="number" step="0.5" id="cdb-base-rent" value="110" oninput="calcularTudo()"></div>
+    <div class="field"><label>LCI/LCA para equivalência (% CDI)</label><input type="number" step="0.5" id="lci-base-pct" value="90" oninput="calcularTudo()"></div>
+  </div>
+  <div class="summary" id="summary-lci"></div>
+  <div class="container" id="cards-container-lci"></div>
+</section>
+
+<section id="tab-tesouro" class="tab-content">
+  <div class="global-controls">
+    <div class="field"><label>Valor investido (R$)</label><input type="number" step="100" id="global-valor-ts" value="50000" oninput="calcularTudo()"></div>
+    <div class="field"><label>Prazo (meses)</label><input type="number" min="1" id="global-meses-ts" value="12" oninput="calcularTudo()"></div>
+    <div class="field"><label>Selic estimada (% a.a.)</label><input type="number" step="0.01" id="selic-ts" value="15.00" oninput="calcularTudo()"></div>
+    <div class="field"><label>Taxa B3 estimada (% a.a.)</label><input type="number" step="0.01" id="b3-ts" value="0.20" oninput="calcularTudo()"></div>
+  </div>
+  <div class="summary" id="summary-ts"></div>
+  <div class="container" id="cards-container-ts"></div>
+</section>
+
+<section id="tab-equiv" class="tab-content">
+  <div class="equivalence">
+    <h2>Equivalência líquida: CDB × LCI/LCA</h2>
+    <div class="equiv-grid">
+      <div class="field">
+        <label>LCI/LCA (% do CDI)</label>
+        <input type="number" step="0.5" id="equiv-lci" value="90" oninput="calcularEquivalencia()">
+      </div>
+      <div class="field">
+        <label>Prazo (meses)</label>
+        <input type="number" min="1" id="equiv-meses" value="12" oninput="calcularEquivalencia()">
+      </div>
+    </div>
+    <div class="equiv-grid" style="margin-top:12px">
+      <div class="equiv-result">LCI/LCA de <strong id="equiv-lci-out">90%</strong><span class="small">do CDI</span></div>
+      <div class="equiv-result">CDB equivalente<strong id="equiv-cdb-out">—</strong><span class="small">do CDI, líquido</span></div>
+    </div>
+    <p class="small" style="margin-top:12px">A equivalência considera o IR regressivo do CDB e CDI constante. É uma aproximação para comparação, não uma cotação.</p>
+  </div>
+</section>
+
+<div class="note">
+  <strong>Importante:</strong> esta é uma calculadora de simulação. O CDI/Selic podem variar durante o período.
+  O cálculo considera taxas constantes, capitalização composta e, para CDB/Tesouro, tributação conforme o prazo.
+  LCI/LCA é apresentada como isenta de IR para pessoa física, quando aplicável. Verifique carência, vencimento, liquidez,
+  emissor e cobertura do FGC antes de investir.
+</div>
+
+<script>
+const DIAS_MES = 30.4166667;
+
+let dadosCdb = [{rent:100},{rent:105},{rent:110}];
+const dadosLci = [
+  {label:"LCI / LCA 80%",pct:80},{label:"LCI / LCA 86%",pct:86},
+  {label:"LCI / LCA 88%",pct:88},{label:"LCI / LCA 90%",pct:90},
+  {label:"LCI / LCA 93%",pct:93},{label:"LCI / LCA 95%",pct:95},
+  {label:"LCI / LCA 100%",pct:100}
+];
+
+function money(v){return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});}
+function pct(v,d=2){return (v*100).toFixed(d)+"%";}
+function getDias(meses){return Math.max(1,Math.round(Number(meses||1)*DIAS_MES));}
+
+function aliquotaIR(dias){
+  if(dias<=180)return .225;
+  if(dias<=360)return .20;
+  if(dias<=720)return .175;
+  return .15;
+}
+function iofPct(dias){
+  if(dias>=30)return 0;
+  return Math.max(0,(30-dias)/30);
+}
+function simularRenda(valor,taxaAa,meses,tributavel=true){
+  const dias=getDias(meses);
+  const fator=Math.pow(1+taxaAa,meses/12);
+  const bruto=valor*fator;
+  const rendimento=bruto-valor;
+  let iof=0, baseIR=rendimento, ir=0, aliq=0;
+  if(tributavel){
+    const iofAliq=iofPct(dias);
+    iof=rendimento*iofAliq;
+    baseIR=Math.max(0,rendimento-iof);
+    aliq=aliquotaIR(dias);
+    ir=baseIR*aliq;
+  }
+  const liquido=bruto-iof-ir;
+  return {dias,bruto,rendimento,iof,aliq,ir,liquido,medio:(liquido-valor)/meses};
+}
+function mudarAba(aba){
+  document.querySelectorAll(".tab-content").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(e=>e.classList.remove("active"));
+  const ordem={cdb:0,lci:1,tesouro:2,equiv:3};
+  document.getElementById("tab-"+aba).classList.add("active");
+  document.querySelectorAll(".tab-btn")[ordem[aba]].classList.add("active");
+  calcularTudo();
+}
+function renderizarCdb(){
+  const c=document.getElementById("cards-container-cdb"); c.innerHTML="";
+  dadosCdb.forEach((d,i)=>{
+    c.innerHTML+=`
+    <div class="card">
+      <div class="card-header">CDB Cenário ${i+1}</div>
+      <div class="card-body">
+        <div class="input-group"><label>Rentabilidade (% do CDI)</label>
+          <input type="number" step="0.5" value="${d.rent}" id="rent-cdb-${i}" oninput="atualizarEstadoCdb()">
+        </div>
+        <div class="result-group">
+          <div class="result-row"><span>Rentabilidade a.a.</span><span id="caa-${i}">—</span></div>
+          <div class="result-row highlight"><span>Rentabilidade a.m.</span><span id="cam-${i}">—</span></div>
+          <div class="result-row"><span>Valor bruto</span><span id="cb-${i}">—</span></div>
+          <div class="result-row"><span>Rendimento bruto</span><span id="cl-${i}">—</span></div>
+          <div class="result-row"><span>IOF</span><span id="ciof-${i}">—</span></div>
+          <div class="result-row"><span>Alíquota IR</span><span id="cir-${i}">—</span></div>
+          <div class="result-row"><span>IR</span><span id="cim-${i}">—</span></div>
+          <div class="result-row highlight liquid"><span>Valor líquido</span><span id="cli-${i}">—</span></div>
+          <div class="result-row highlight"><span>Lucro líquido médio/mês</span><span id="cmed-${i}">—</span></div>
+          <div class="result-row diff" id="cdifbox-${i}" style="${i===0?"display:none":""}"><span>Dif. p/ Cenário 1</span><span id="cdif-${i}">—</span></div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById("btn-rem-cdb").style.display=dadosCdb.length>1?"inline-block":"none";
+}
+function atualizarEstadoCdb(){
+  dadosCdb.forEach((d,i)=>{const e=document.getElementById("rent-cdb-"+i);if(e)d.rent=parseFloat(e.value)||0});
+  calcularTudo();
+}
+function adicionarCardCdb(){dadosCdb.push({rent:115});renderizarCdb();calcularTudo();}
+function removerCardCdb(){if(dadosCdb.length>1){dadosCdb.pop();renderizarCdb();calcularTudo();}}
+
+function renderizarLci(){
+  const c=document.getElementById("cards-container-lci");c.innerHTML="";
+  dadosLci.forEach((d,i)=>c.innerHTML+=`
+    <div class="card" style="border-top-color:${"#0284c7"}">
+      <div class="card-header" style="background:#0284c7">${d.label}</div>
+      <div class="card-body"><div class="result-group" style="margin-top:0;border-top:0">
+        <div class="result-row"><span>Rentabilidade a.a.</span><span id="laa-${i}">—</span></div>
+        <div class="result-row highlight"><span>Rentabilidade a.m.</span><span id="lam-${i}">—</span></div>
+        <div class="result-row"><span>Rendimento líquido</span><span id="llucro-${i}">—</span></div>
+        <div class="result-row highlight liquid blue-liquid"><span>Valor líquido</span><span id="lli-${i}">—</span></div>
+        <div class="result-row highlight"><span>Lucro líquido médio/mês</span><span id="lmed-${i}">—</span></div>
+        <div id="lbadge-${i}"></div>
+      </div></div>
+    </div>`);
+}
+function calcularTudo(){
+  const cdi=(parseFloat(document.getElementById("input-cdi").value)||0)/100;
+  const valorC=parseFloat(document.getElementById("global-valor-cdb").value)||0;
+  const mesesC=parseInt(document.getElementById("global-meses-cdb").value)||1;
+  let liquidos=[];
+  dadosCdb.forEach((d,i)=>{
+    const taxa=cdi*(d.rent/100), r=simularRenda(valorC,taxa,mesesC,true);
+    liquidos.push(r.liquido);
+    set("caa-"+i,pct(taxa)+" a.a.");set("cam-"+i,pct(Math.pow(1+taxa,1/12)-1)+" a.m.");
+    set("cb-"+i,money(r.bruto));set("cl-"+i,money(r.rendimento));set("ciof-"+i,money(r.iof));
+    set("cir-"+i,pct(r.aliq,1));set("cim-"+i,money(r.ir));set("cli-"+i,money(r.liquido));set("cmed-"+i,money(r.medio));
+    if(i>0){const dif=r.liquido-liquidos[0];set("cdif-"+i,(dif>=0?"+ ":"− ")+money(Math.abs(dif)));document.getElementById("cdif-"+i).style.color=dif>=0?"#008742":"#dc2626";}
+  });
+
+  const valorL=parseFloat(document.getElementById("global-valor-lci").value)||0;
+  const mesesL=parseInt(document.getElementById("global-meses-lci").value)||1;
+  const cdbPct=(parseFloat(document.getElementById("cdb-base-rent").value)||0)/100;
+  const cdbRef=simularRenda(valorL,cdi*cdbPct,mesesL,true);
+  dadosLci.forEach((d,i)=>{
+    const taxa=cdi*d.pct/100,r=simularRenda(valorL,taxa,mesesL,false);
+    set("laa-"+i,pct(taxa)+" a.a.");set("lam-"+i,pct(Math.pow(1+taxa,1/12)-1)+" a.m.");
+    set("llucro-"+i,money(r.rendimento));set("lli-"+i,money(r.liquido));set("lmed-"+i,money(r.medio));
+    const diff=r.liquido-cdbRef.liquido, b=document.getElementById("lbadge-"+i);
+    b.innerHTML=diff>0?`<div class="badge best">✔ LCI/LCA é melhor em ${money(diff)}</div>`:
+      diff<0?`<div class="badge worse">✖ CDB é melhor em ${money(-diff)}</div>`:
+      `<div class="badge tie">Empate</div>`;
+  });
+  const melhorLci=Math.max(...dadosLci.map(d=>simularRenda(valorL,cdi*d.pct/100,mesesL,false).liquido));
+  document.getElementById("summary-lci").innerHTML=`
+    <h2>Resumo da comparação</h2>
+    <div class="summary-main">Seu CDB de referência: ${cdbPct*100}% do CDI</div>
+    <div class="summary-value">${money(cdbRef.liquido)}</div>
+    <div class="summary-grid">
+      <div class="summary-item">IR do CDB<strong>${money(cdbRef.ir)}</strong></div>
+      <div class="summary-item">Melhor LCI/LCA da lista<strong>${money(melhorLci)}</strong></div>
+      <div class="summary-item">Prazo<strong>${mesesL} mês(es) / ${cdbRef.dias} dias</strong></div>
+    </div>`;
+
+  calcularTesouro(cdi);
+  calcularEquivalencia();
+}
+function calcularTesouro(cdi){
+  const valor=parseFloat(document.getElementById("global-valor-ts").value)||0;
+  const meses=parseInt(document.getElementById("global-meses-ts").value)||1;
+  const selic=(parseFloat(document.getElementById("selic-ts").value)||0)/100;
+  const b3=(parseFloat(document.getElementById("b3-ts").value)||0)/100;
+  const taxaLiquidaBruta=selic-b3;
+  const r=simularRenda(valor,Math.max(0,taxaLiquidaBruta),meses,true);
+  document.getElementById("summary-ts").innerHTML=`
+    <h2>Resumo do Tesouro Selic</h2>
+    <div class="summary-main">Simulação com Selic de ${pct(selic)} a.a. e taxa B3 de ${pct(b3)} a.a.</div>
+    <div class="summary-grid">
+      <div class="summary-item">Valor bruto<strong>${money(r.bruto)}</strong></div>
+      <div class="summary-item">IR + IOF<strong>${money(r.ir+r.iof)}</strong></div>
+      <div class="summary-item">Valor líquido<strong>${money(r.liquido)}</strong></div>
+    </div>`;
+}
+function calcularEquivalencia(){
+  const lci=parseFloat(document.getElementById("equiv-lci").value)||0;
+  const meses=parseInt(document.getElementById("equiv-meses").value)||1;
+  const cdi=(parseFloat(document.getElementById("input-cdi").value)||0)/100;
+  const dias=getDias(meses), ir=aliquotaIR(dias), iof=iofPct(dias);
+  // Resolve numericamente a taxa anual do CDB que deixa o líquido igual à LCI.
+  const alvo=Math.pow(1+cdi*lci/100,meses/12);
+  const fatorRetorno=(1-iof)*(alvo-1); // aproximação inicial
+  let low=0,high=3;
+  for(let k=0;k<80;k++){
+    const mid=(low+high)/2;
+    const r=simularRenda(1,cdi*mid,meses,true).liquido;
+    if(r<alvo)low=mid;else high=mid;
+  }
+  const equiv=((low+high)/2)*100;
+  document.getElementById("equiv-lci-out").textContent=lci.toFixed(1)+"%";
+  document.getElementById("equiv-cdb-out").textContent=equiv.toFixed(2)+"%";
+}
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+
+async function buscarCDI(){
+  try{
+    // Série 12 do SGS é usada aqui apenas como referência de taxa CDI divulgada.
+    const response=await fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json");
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const data=await response.json();
+    if(data?.length){
+      const v=parseFloat(String(data[0].valor).replace(",",".")); 
+      if(Number.isFinite(v)&&v>0){
+        document.getElementById("input-cdi").value=v.toFixed(2);
+        document.getElementById("status-bc").textContent="Referência consultada no Banco Central";
+        calcularTudo();return;
+      }
+    }
+    throw new Error("sem dados");
+  }catch(e){
+    document.getElementById("status-bc").textContent="Modo manual — informe o CDI acima";
+  }
+}
+
+renderizarCdb();renderizarLci();calcularTudo();buscarCDI();
+</script>
+</body>
+</html>
