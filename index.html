@@ -24,7 +24,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         h1 {
@@ -35,13 +35,51 @@
         .taxa-base {
             background: #e2e8f0;
             display: inline-block;
-            padding: 8px 15px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            margin-top: 5px;
+        }
+
+        /* Quadro de Controles Globais */
+        .global-controls {
+            background: var(--card-bg);
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 20px;
+            border-top: 5px solid var(--secondary-color);
+        }
+
+        .global-group {
+            flex: 1;
+        }
+
+        .global-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .global-group input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
             color: var(--primary-color);
         }
 
+        /* Container dos Cards */
         .container {
             display: flex;
             flex-wrap: wrap;
@@ -91,6 +129,7 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 0.95rem;
+            font-weight: bold;
         }
 
         .result-group {
@@ -148,15 +187,28 @@
         <div class="taxa-base" id="info-cdi">Carregando taxa do CDI...</div>
     </header>
 
-    <div class="container" id="cards-container">
+    <!-- Quadro separado para Valor e Meses (iguais para todos) -->
+    <div class="global-controls">
+        <div class="global-group">
+            <label>Valor Investido (R$)</label>
+            <input type="number" step="1000" id="global-valor" value="50000" oninput="calcularTudo()">
         </div>
+        <div class="global-group">
+            <label>Prazo (Meses)</label>
+            <input type="number" id="global-meses" value="6" oninput="calcularTudo()">
+        </div>
+    </div>
+
+    <!-- Cards de Cenários de Rentabilidade -->
+    <div class="container" id="cards-container">
+        <!-- Inserido via JavaScript -->
+    </div>
 
     <button class="btn-adicionar" onclick="adicionarCard()">+ Adicionar Cenário</button>
 
     <script>
-        let cdiAnual = 0.149; // Valor padrão de fallback (14.9%)
+        let cdiAnual = 0.149; // Fallback padrão
 
-        // Buscar taxa do CDI do Banco Central ao carregar a página
         async function buscarCDI() {
             try {
                 const response = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=csv');
@@ -164,7 +216,7 @@
                 const linhas = data.split('\n');
                 const colunas = linhas[1].split(';');
                 let selic = parseFloat(colunas[1].replace(',', '.')) / 100;
-                cdiAnual = selic - 0.0010; // CDI costuma ser 0.10% abaixo da Selic
+                cdiAnual = selic - 0.0010; 
                 document.getElementById('info-cdi').innerText = `CDI Atual (BCB): ${(cdiAnual * 100).toFixed(2)}% a.a.`;
                 calcularTudo();
             } catch (error) {
@@ -173,11 +225,11 @@
             }
         }
 
-        let numCenarios = 3;
+        // Cenários iniciais focados apenas nas diferentes porcentagens
         const dadosIniciais = [
-            { rent: 110, valor: 50000, meses: 6 },
-            { rent: 100, valor: 50000, meses: 6 },
-            { rent: 105, valor: 50000, meses: 6 }
+            { rent: 100 },
+            { rent: 105 },
+            { rent: 120 }
         ];
 
         function renderizarCards() {
@@ -191,15 +243,7 @@
                         <div class="card-body">
                             <div class="input-group">
                                 <label>Rentabilidade (% do CDI)</label>
-                                <input type="number" step="0.1" value="${dado.rent}" id="rent-${index}" oninput="calcularTudo()">
-                            </div>
-                            <div class="input-group">
-                                <label>Valor investido (R$)</label>
-                                <input type="number" step="1000" value="${dado.valor}" id="valor-${index}" oninput="calcularTudo()">
-                            </div>
-                            <div class="input-group">
-                                <label>Vencimento (meses)</label>
-                                <input type="number" value="${dado.meses}" id="meses-${index}" oninput="calcularTudo()">
+                                <input type="number" step="0.5" value="${dado.rent}" id="rent-${index}" oninput="calcularTudo()">
                             </div>
 
                             <div class="result-group">
@@ -219,25 +263,26 @@
         }
 
         function adicionarCard() {
-            dadosIniciais.push({ rent: 115, valor: 50000, meses: 12 });
-            numCenarios++;
+            dadosIniciais.push({ rent: 115 });
             renderizarCards();
         }
 
         function calcularTudo() {
-            dadosIniciais.forEach((_, index) => {
-                const rentPct = parseFloat(document.getElementById(`rent-${index}`).value) / 100;
-                const valorInvestido = parseFloat(document.getElementById(`valor-${index}`).value);
-                const meses = parseInt(document.getElementById(`meses-${index}`).value);
+            const valorInvestido = parseFloat(document.getElementById('global-valor').value) || 0;
+            const meses = parseInt(document.getElementById('global-meses').value) || 0;
 
-                // Cálculo da taxa anual do CDB
+            dadosIniciais.forEach((_, index) => {
+                const rentInput = document.getElementById(`rent-${index}`);
+                if (!rentInput) return;
+
+                const rentPct = parseFloat(rentInput.value) / 100;
                 const rentAa = cdiAnual * rentPct;
 
-                // Valor Bruto composto por meses
+                // Cálculo do valor bruto composto
                 const valorBruto = valorInvestido * Math.pow((1 + rentAa), (meses / 12));
                 const rendimentos = valorBruto - valorInvestido;
 
-                // Alíquota de IR Regressiva baseada em meses
+                // Alíquota de IR Regressiva baseada no prazo global em meses
                 let aliquotaIR = 0.15;
                 if (meses <= 6) aliquotaIR = 0.225;
                 else if (meses <= 12) aliquotaIR = 0.20;
@@ -246,7 +291,7 @@
                 const valorImposto = rendimentos * aliquotaIR;
                 const valorLiquido = valorBruto - valorImposto;
 
-                // Exibir na tela formatado
+                // Atualizar na tela
                 document.getElementById(`res-rent-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
                 document.getElementById(`res-bruto-${index}`).innerText = valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-lucro-${index}`).innerText = rendimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -256,7 +301,8 @@
             });
         }
 
-        // Iniciar execução
+        // Executar ao carregar
+        renderizarCards();
         buscarCDI();
     </script>
 </body>
