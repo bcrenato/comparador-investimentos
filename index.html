@@ -247,8 +247,8 @@
     </div>
 
     <script>
+        // Cenário 1 fixado em 100% do CDI como base
         let dadosIniciais = [
-            { rent: 120 },
             { rent: 100 },
             { rent: 105 },
             { rent: 110 }
@@ -316,7 +316,7 @@
         }
 
         function adicionarCard() {
-            dadosIniciais.push({ rent: 115 });
+            dadosIniciais.push({ rent: 120 });
             renderizarCards();
         }
 
@@ -346,8 +346,6 @@
 
                 const rentPct = parseFloat(rentInput.value) / 100 || 0;
                 const rentAa = cdiAnual * rentPct;
-
-                // Cálculo da taxa mensal composta: (1 + a.a.)^(1/12) - 1
                 const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
 
                 const valorBruto = valorInvestido * Math.pow((1 + rentAa), (meses / 12));
@@ -361,7 +359,6 @@
                 const valorImposto = rendimentos * aliquotaIR;
                 const valorLiquido = valorBruto - valorImposto;
                 
-                // Média de rendimento líquido gerado por mês
                 const ganhoLiquidoTotal = valorLiquido - valorInvestido;
                 const valorMedioMensal = ganhoLiquidoTotal / meses;
 
@@ -371,7 +368,6 @@
                     valorLiquidoBase = valorLiquido;
                 }
 
-                // Preencher campos na tela
                 document.getElementById(`res-rent-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
                 document.getElementById(`res-rent-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
                 document.getElementById(`res-bruto-${index}`).innerText = valorBruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -382,7 +378,6 @@
                 document.getElementById(`res-liquido-${index}`).innerText = valorLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             });
 
-            // Loop para as diferenças em relação ao Cenário 1
             dadosIniciais.forEach((_, index) => {
                 if (index > 0) {
                     const dif = liquidosArray[index] - valorLiquidoBase;
