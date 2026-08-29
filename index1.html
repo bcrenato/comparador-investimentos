@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparador de Investimentos: CDB vs LCI/LCA</title>
+    <title>Comparador de Investimentos Avançado</title>
     <style>
         :root {
             --primary-color: #1b365d;
@@ -38,17 +38,18 @@
             justify-content: center;
             gap: 10px;
             margin-bottom: 25px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
             background: #cbd5e1;
             color: #334155;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all 0.3s;
         }
 
@@ -88,10 +89,10 @@
             border-bottom: 1px dashed var(--primary-color);
         }
 
-        /* Quadro de Controles Globais */
+        /* Quadros Globais */
         .global-controls {
             background: var(--card-bg);
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto 25px auto;
             padding: 20px;
             border-radius: 12px;
@@ -122,6 +123,32 @@
             font-size: 1rem;
             font-weight: bold;
             color: var(--primary-color);
+        }
+
+        /* Tabela Auxiliar de IR explicativa */
+        .ir-info-box {
+            background: #fff;
+            max-width: 650px;
+            margin: 0 auto 25px auto;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            color: #555;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary-color);
+        }
+        .ir-info-box table {
+            width: 100%;
+            margin-top: 8px;
+            border-collapse: collapse;
+        }
+        .ir-info-box th, .ir-info-box td {
+            border: 1px solid #e2e8f0;
+            padding: 4px 8px;
+            text-align: left;
+        }
+        .ir-info-box th {
+            background: #f8fafc;
         }
 
         /* Container dos Cards */
@@ -167,7 +194,7 @@
             margin-bottom: 4px;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
@@ -186,7 +213,7 @@
         .result-row {
             display: flex;
             justify-content: space-between;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             margin-bottom: 6px;
         }
 
@@ -227,9 +254,9 @@
             text-align: center;
             padding: 8px;
             font-weight: bold;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             border-radius: 6px;
-            margin-top: 12px;
+            margin-top: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
 
@@ -272,8 +299,20 @@
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="mudarAba('cdb')">Comparar CDBs</button>
-        <button class="tab-btn" onclick="mudarAba('lci')">Comparar CDB vs LCI/LCA</button>
+        <button class="tab-btn active" onclick="mudarAba('cdb')">1. Comparar CDBs</button>
+        <button class="tab-btn" onclick="mudarAba('caixinha')">2. Caixinhas c/ Teto (Nubank)</button>
+        <button class="tab-btn" onclick="mudarAba('lci')">3. CDB vs LCI/LCA</button>
+    </div>
+
+    <div class="ir-info-box">
+        <b>Tabela Regressiva de Imposto de Renda (Regra Oficial por Dias Corridos):</b>
+        <table>
+            <tr><th>Prazo (Dias)</th><th>Referência</th><th>Alíquota IR</th></tr>
+            <tr><td>Até 180 dias</td><td>Até 6 meses</td><td>22,5%</td></tr>
+            <tr><td>181 a 360 dias</td><td>6 meses a 1 ano</td><td>20,0%</td></tr>
+            <tr><td>361 a 720 dias</td><td>1 ano a 2 anos</td><td>17,5%</td></tr>
+            <tr><td>Acima de 720 dias</td><td>Acima de 2 anos</td><td>15,0%</td></tr>
+        </table>
     </div>
 
     <div id="tab-cdb" class="tab-content active">
@@ -283,8 +322,8 @@
                 <input type="number" step="1000" id="global-valor-cdb" value="50000" oninput="calcularTudo()">
             </div>
             <div class="global-group">
-                <label>Prazo (Meses)</label>
-                <input type="number" id="global-meses-cdb" value="12" oninput="calcularTudo()">
+                <label>Prazo (Dias Corridos)</label>
+                <input type="number" id="global-dias-cdb" value="365" oninput="calcularTudo()">
             </div>
         </div>
 
@@ -296,6 +335,21 @@
         </div>
     </div>
 
+    <div id="tab-caixinha" class="tab-content">
+        <div class="global-controls">
+            <div class="global-group">
+                <label>Valor Total na Caixinha (R$)</label>
+                <input type="number" step="1000" id="global-valor-cx" value="20000" oninput="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Prazo (Dias Corridos)</label>
+                <input type="number" id="global-dias-cx" value="365" oninput="calcularTudo()">
+            </div>
+        </div>
+
+        <div class="container" id="cards-container-cx"></div>
+    </div>
+
     <div id="tab-lci" class="tab-content">
         <div class="global-controls">
             <div class="global-group">
@@ -303,8 +357,8 @@
                 <input type="number" step="1000" id="global-valor-lci" value="50000" oninput="calcularTudo()">
             </div>
             <div class="global-group">
-                <label>Prazo (Meses)</label>
-                <input type="number" id="global-meses-lci" value="12" oninput="calcularTudo()">
+                <label>Prazo (Dias Corridos)</label>
+                <input type="number" id="global-dias-lci" value="365" oninput="calcularTudo()">
             </div>
         </div>
 
@@ -325,6 +379,11 @@
             { rent: 110 }
         ];
 
+        let dadosCaixinha = [
+            { label: "Caixinha 115% (Teto R$ 5mil)", teto: 5000, taxaTeto: 115 },
+            { label: "Caixinha 120% (Teto R$ 10mil)", teto: 10000, taxaTeto: 120 }
+        ];
+
         let dadosLci = [
             { label: "LCI / LCA 80%", pct: 80 },
             { label: "LCI / LCA 86%", pct: 86 },
@@ -340,11 +399,21 @@
             if (aba === 'cdb') {
                 document.getElementById('tab-cdb').classList.add('active');
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else if (aba === 'caixinha') {
+                document.getElementById('tab-caixinha').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
             } else {
                 document.getElementById('tab-lci').classList.add('active');
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
             }
             calcularTudo();
+        }
+
+        function obterAliquotaIR(dias) {
+            if (dias <= 180) return 0.225;
+            if (dias <= 360) return 0.20;
+            if (dias <= 720) return 0.175;
+            return 0.15;
         }
 
         async function buscarCDI() {
@@ -377,8 +446,6 @@
                                 <input type="number" step="0.5" value="${dado.rent}" id="rent-cdb-${index}" oninput="atualizarEstadoCdb()">
                             </div>
                             <div class="result-group">
-                                <div class="result-row"><span>Rent. a.a:</span> <span id="res-cdb-aa-${index}">-</span></div>
-                                <div class="result-row highlight-mensal"><span>Rent. a.m:</span> <span id="res-cdb-am-${index}">-</span></div>
                                 <div class="result-row"><span>Valor Bruto:</span> <span id="res-cdb-bruto-${index}">-</span></div>
                                 <div class="result-row"><span>Rendimentos:</span> <span id="res-cdb-lucro-${index}">-</span></div>
                                 <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cdb-mensal-${index}">-</span></div>
@@ -394,6 +461,31 @@
                 `;
             });
             document.getElementById('btn-rem-cdb').style.display = dadosCdb.length > 1 ? 'inline-block' : 'none';
+
+            // Renderizar Aba Caixinhas
+            const containerCx = document.getElementById('cards-container-cx');
+            containerCx.innerHTML = '';
+            dadosCaixinha.forEach((dado, index) => {
+                containerCx.innerHTML += `
+                    <div class="card" style="border-top-color: #8b5cf6;">
+                        <div class="card-header" style="background: #8b5cf6;">${dado.label}</div>
+                        <div class="card-body">
+                            <div class="result-group" style="margin-top: 0; border-top: none;">
+                                <div class="result-row"><span>No Teto (${dado.taxaTeto}%):</span> <span id="res-cx-teto-val-${index}">-</span></div>
+                                <div class="result-row"><span>Acima do Teto (100%):</span> <span id="res-cx-acima-val-${index}">-</span></div>
+                                <div class="result-row"><span>Valor Bruto Total:</span> <span id="res-cx-bruto-${index}">-</span></div>
+                                <div class="result-row"><span>Rendimentos Totais:</span> <span id="res-cx-lucro-${index}">-</span></div>
+                                <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cx-mensal-${index}">-</span></div>
+                                <div class="result-row"><span>Alíquota IR:</span> <span id="res-cx-ir-aliq-${index}">-</span></div>
+                                <div class="result-row"><span>R$ Imposto:</span> <span id="res-cx-ir-val-${index}">-</span></div>
+                                <div class="result-row highlight-liquido" style="background-color: #f3e8ff; border-color: #8b5cf6;">
+                                    <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
 
             // Renderizar Aba LCI/LCA
             const containerLci = document.getElementById('cards-container-lci');
@@ -444,9 +536,11 @@
             const cdiAnualInput = parseFloat(document.getElementById('input-cdi').value);
             const cdiAnual = !isNaN(cdiAnualInput) ? cdiAnualInput / 100 : 0.149;
 
-            // --- CÁLCULOS ABA CDB ---
+            // --- ABA 1: CDBs ---
             const valorCdb = parseFloat(document.getElementById('global-valor-cdb').value) || 0;
-            const mesesCdb = parseInt(document.getElementById('global-meses-cdb').value) || 1;
+            const diasCdb = parseInt(document.getElementById('global-dias-cdb').value) || 1;
+            const anosCdb = diasCdb / 365;
+            const mesesCdbAprox = diasCdb / 30;
 
             let liquidoCdbBase = 0;
             let liquidosCdbArray = [];
@@ -456,25 +550,18 @@
                 if (!rentInput) return;
                 const rentPct = parseFloat(rentInput.value) / 100 || 0;
                 const rentAa = cdiAnual * rentPct;
-                const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
 
-                const bruto = valorCdb * Math.pow((1 + rentAa), (mesesCdb / 12));
+                const bruto = valorCdb * Math.pow((1 + rentAa), anosCdb);
                 const lucro = bruto - valorCdb;
 
-                let aliquotaIR = 0.15;
-                if (mesesCdb <= 6) aliquotaIR = 0.225;
-                else if (mesesCdb <= 12) aliquotaIR = 0.20;
-                else if (mesesCdb <= 24) aliquotaIR = 0.175;
-
+                const aliquotaIR = obterAliquotaIR(diasCdb);
                 const imposto = lucro * aliquotaIR;
                 const liquido = bruto - imposto;
-                const medioMensal = (liquido - valorCdb) / mesesCdb;
+                const medioMensal = (liquido - valorCdb) / (mesesCdbAprox > 0 ? mesesCdbAprox : 1);
 
                 liquidosCdbArray.push(liquido);
                 if (index === 0) liquidoCdbBase = liquido;
 
-                document.getElementById(`res-cdb-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
-                document.getElementById(`res-cdb-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
                 document.getElementById(`res-cdb-bruto-${index}`).innerText = bruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cdb-lucro-${index}`).innerText = lucro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cdb-mensal-${index}`).innerText = medioMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -492,27 +579,60 @@
                 }
             });
 
-            // --- CÁLCULOS ABA LCI / LCA ---
+            // --- ABA 2: CAIXINHAS COM TETO ---
+            const valorCxTotal = parseFloat(document.getElementById('global-valor-cx').value) || 0;
+            const diasCx = parseInt(document.getElementById('global-dias-cx').value) || 1;
+            const anosCx = diasCx / 365;
+            const mesesCxAprox = diasCx / 30;
+
+            dadosCaixinha.forEach((dado, index) => {
+                let valorNoTeto = Math.min(valorCxTotal, dado.teto);
+                let valorAcimaTeto = Math.max(0, valorCxTotal - dado.teto);
+
+                // Cálculo para a parcela no teto (ex: 115% ou 120%)
+                const rentTetoAa = cdiAnual * (dado.taxaTeto / 100);
+                const brutoTeto = valorNoTeto * Math.pow((1 + rentTetoAa), anosCx);
+                
+                // Cálculo para a parcela acima do teto (100% do CDI)
+                const rentAcimaAa = cdiAnual * 1.00;
+                const brutoAcima = valorAcimaTeto * Math.pow((1 + rentAcimaAa), anosCx);
+
+                const brutoTotal = brutoTeto + brutoAcima;
+                const lucroTotal = brutoTotal - valorCxTotal;
+
+                const aliquotaIRCx = obterAliquotaIR(diasCx);
+                const impostoCx = lucroTotal * aliquotaIRCx;
+                const liquidoCx = brutoTotal - impostoCx;
+                const medioMensalCx = (liquidoCx - valorCxTotal) / (mesesCxAprox > 0 ? mesesCxAprox : 1);
+
+                document.getElementById(`res-cx-teto-val-${index}`).innerText = valorNoTeto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-acima-val-${index}`).innerText = valorAcimaTeto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-bruto-${index}`).innerText = brutoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-lucro-${index}`).innerText = lucroTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-mensal-${index}`).innerText = medioMensalCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-ir-aliq-${index}`).innerText = (aliquotaIRCx * 100) + '%';
+                document.getElementById(`res-cx-ir-val-${index}`).innerText = impostoCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-liquido-${index}`).innerText = liquidoCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            });
+
+            // --- ABA 3: LCI / LCA ---
             const valorLci = parseFloat(document.getElementById('global-valor-lci').value) || 0;
-            const mesesLci = parseInt(document.getElementById('global-meses-lci').value) || 1;
+            const diasLci = parseInt(document.getElementById('global-dias-lci').value) || 1;
+            const anosLci = diasLci / 365;
             const cdbBasePct = parseFloat(document.getElementById('cdb-base-rent').value) / 100 || 1.10;
 
-            // Calcular o rendimento líquido do CDB de referência
+            // Rendimento líquido do CDB de referência para comparação
             const rentCdbBaseAa = cdiAnual * cdbBasePct;
-            const brutoCdbRef = valorLci * Math.pow((1 + rentCdbBaseAa), (mesesLci / 12));
+            const brutoCdbRef = valorLci * Math.pow((1 + rentCdbBaseAa), anosLci);
             const lucroCdbRef = brutoCdbRef - valorLci;
-            let aliquotaRef = 0.15;
-            if (mesesLci <= 6) aliquotaRef = 0.225;
-            else if (mesesLci <= 12) aliquotaRef = 0.20;
-            else if (mesesLci <= 24) aliquotaRef = 0.175;
+            const aliquotaRef = obterAliquotaIR(diasLci);
             const liquidoCdbRef = brutoCdbRef - (lucroCdbRef * aliquotaRef);
 
             dadosLci.forEach((dado, index) => {
                 const rentAa = cdiAnual * (dado.pct / 100);
                 const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
-                // LCI/LCA é isenta de IR
-                const liquidoLci = valorLci * Math.pow((1 + rentAa), (mesesLci / 12));
-                const medioMensalLci = (liquidoLci - valorLci) / mesesLci;
+                const liquidoLci = valorLci * Math.pow((1 + rentAa), anosLci);
+                const medioMensalLci = (liquidoLci - valorLci) / (diasLci / 30 > 0 ? diasLci / 30 : 1);
 
                 document.getElementById(`res-lci-aa-${index}`).innerText = (rentAa * 100).toFixed(2) + '% a.a.';
                 document.getElementById(`res-lci-am-${index}`).innerText = (rentAm * 100).toFixed(2) + '% a.m.';
