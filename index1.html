@@ -92,62 +92,75 @@
         /* Quadros Globais */
         .global-controls {
             background: var(--card-bg);
-            max-width: 650px;
+            max-width: 800px;
             margin: 0 auto 25px auto;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: flex;
-            gap: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
             border-top: 5px solid var(--secondary-color);
         }
 
         .global-group {
             flex: 1;
+            min-width: 170px;
         }
 
         .global-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #666;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: bold;
         }
 
-        .global-group input {
+        .global-group input, .global-group select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             color: var(--primary-color);
         }
 
-        /* Tabela Auxiliar de IR explicativa */
-        .ir-info-box {
-            background: #fff;
-            max-width: 650px;
+        /* Painel Informativo de Impostos (IOF + IR) */
+        .info-panel {
+            max-width: 800px;
             margin: 0 auto 25px auto;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            background: #fff;
+            flex: 1;
+            min-width: 280px;
             padding: 15px;
             border-radius: 10px;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #555;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border-left: 4px solid var(--secondary-color);
         }
-        .ir-info-box table {
+
+        .info-box table {
             width: 100%;
-            margin-top: 8px;
+            margin-top: 6px;
             border-collapse: collapse;
         }
-        .ir-info-box th, .ir-info-box td {
+
+        .info-box th, .info-box td {
             border: 1px solid #e2e8f0;
-            padding: 4px 8px;
+            padding: 3px 6px;
             text-align: left;
         }
-        .ir-info-box th {
+
+        .info-box th {
             background: #f8fafc;
         }
 
@@ -213,8 +226,8 @@
         .result-row {
             display: flex;
             justify-content: space-between;
-            font-size: 0.83rem;
-            margin-bottom: 6px;
+            font-size: 0.82rem;
+            margin-bottom: 5px;
         }
 
         .result-row span:last-child {
@@ -223,9 +236,9 @@
 
         .highlight-mensal {
             background-color: #f0f4f8;
-            padding: 6px 8px;
+            padding: 5px 8px;
             border-radius: 6px;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             border: 1px solid #d2dce6;
         }
 
@@ -244,9 +257,9 @@
 
         .highlight-dif {
             background-color: #f8fafc;
-            padding: 6px 8px;
+            padding: 5px 8px;
             border-radius: 6px;
-            margin-top: 6px;
+            margin-top: 5px;
             border: 1px solid #cbd5e1;
         }
 
@@ -254,7 +267,7 @@
             text-align: center;
             padding: 8px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             border-radius: 6px;
             margin-top: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
@@ -298,23 +311,38 @@
         </div>
     </header>
 
+    <!-- Sistema de Abas -->
     <div class="tabs">
         <button class="tab-btn active" onclick="mudarAba('cdb')">1. Comparar CDBs</button>
         <button class="tab-btn" onclick="mudarAba('caixinha')">2. Caixinhas vs CDB</button>
         <button class="tab-btn" onclick="mudarAba('lci')">3. CDB vs LCI/LCA</button>
     </div>
 
-    <div class="ir-info-box">
-        <b>Tabela Regressiva de Imposto de Renda (Regra Oficial por Dias Corridos):</b>
-        <table>
-            <tr><th>Prazo (Dias)</th><th>Referência</th><th>Alíquota IR</th></tr>
-            <tr><td>Até 180 dias</td><td>Até 6 meses</td><td>22,5%</td></tr>
-            <tr><td>181 a 360 dias</td><td>6 meses a 1 ano</td><td>20,0%</td></tr>
-            <tr><td>361 a 720 dias</td><td>1 ano a 2 anos</td><td>17,5%</td></tr>
-            <tr><td>Acima de 720 dias</td><td>Acima de 2 anos</td><td>15,0%</td></tr>
-        </table>
+    <!-- Painéis Informativos de Impostos -->
+    <div class="info-panel">
+        <div class="info-box">
+            <b>Tabela Regressiva de IR (Prazo Corrigido):</b>
+            <table>
+                <tr><th>Prazo (Dias)</th><th>Alíquota</th></tr>
+                <tr><td>Até 180 dias</td><td>22,5%</td></tr>
+                <tr><td>181 a 360 dias</td><td>20,0%</td></tr>
+                <tr><td>361 a 720 dias</td><td>17,5%</td></tr>
+                <tr><td>Acima de 720 dias</td><td>15,0%</td></tr>
+            </table>
+        </div>
+        <div class="info-box">
+            <b>Tabela Regressiva de IOF (Até 29 dias):</b>
+            <table style="font-size: 0.75rem;">
+                <tr><th>1º: 96% | 2º: 93% | 3º: 90%</th><th>4º: 86% | 5º: 83% | 6º: 80%</th></tr>
+                <tr><th>7º: 76% | 8º: 73% | 9º: 70%</th><th>10º: 66% | 11º: 63% | 12º: 60%</th></tr>
+                <tr><th>13º: 56% | 14º: 53% | 15º: 50%</th><th>16º: 46% | 17º: 43% | 18º: 40%</th></tr>
+                <tr><th>19º: 36% | 20º: 33% | 21º: 30%</th><th>22º: 26% | 23º: 23% | 24º: 20%</th></tr>
+                <tr><th>25º: 16% | 26º: 13% | 27º: 10%</th><th>28º: 6% | 29º: 3% | 30º+: 0%</th></tr>
+            </table>
+        </div>
     </div>
 
+    <!-- ABA 1: CDBs -->
     <div id="tab-cdb" class="tab-content active">
         <div class="global-controls">
             <div class="global-group">
@@ -322,8 +350,19 @@
                 <input type="number" step="1000" id="global-valor-cdb" value="50000" oninput="calcularTudo()">
             </div>
             <div class="global-group">
-                <label>Prazo (Dias Corridos)</label>
-                <input type="number" id="global-dias-cdb" value="365" oninput="calcularTudo()">
+                <label>Data de Início</label>
+                <input type="date" id="global-inicio-cdb" value="2026-01-01" onchange="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Data de Resgate</label>
+                <input type="date" id="global-fim-cdb" value="2027-01-01" onchange="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Base de Rendimento</label>
+                <select id="global-base-cdb" onchange="calcularTudo()">
+                    <option value="uteis">Dias Úteis (252/ano)</option>
+                    <option value="corridos" selected>Diário / Corridos (365/ano)</option>
+                </select>
             </div>
         </div>
 
@@ -335,6 +374,7 @@
         </div>
     </div>
 
+    <!-- ABA 2: CAIXINHAS COM TETO VS CDB -->
     <div id="tab-caixinha" class="tab-content">
         <div class="global-controls">
             <div class="global-group">
@@ -342,8 +382,19 @@
                 <input type="number" step="1000" id="global-valor-cx" value="20000" oninput="calcularTudo()">
             </div>
             <div class="global-group">
-                <label>Prazo (Dias Corridos)</label>
-                <input type="number" id="global-dias-cx" value="365" oninput="calcularTudo()">
+                <label>Data de Início</label>
+                <input type="date" id="global-inicio-cx" value="2026-01-01" onchange="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Data de Resgate</label>
+                <input type="date" id="global-fim-cx" value="2027-01-01" onchange="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Base de Rendimento</label>
+                <select id="global-base-cx" onchange="calcularTudo()">
+                    <option value="uteis">Dias Úteis (252/ano)</option>
+                    <option value="corridos" selected>Diário / Corridos (365/ano)</option>
+                </select>
             </div>
         </div>
 
@@ -357,6 +408,7 @@
         <div class="container" id="cards-container-cx"></div>
     </div>
 
+    <!-- ABA 3: LCI / LCA -->
     <div id="tab-lci" class="tab-content">
         <div class="global-controls">
             <div class="global-group">
@@ -364,8 +416,19 @@
                 <input type="number" step="1000" id="global-valor-lci" value="50000" oninput="calcularTudo()">
             </div>
             <div class="global-group">
-                <label>Prazo (Dias Corridos)</label>
-                <input type="number" id="global-dias-lci" value="365" oninput="calcularTudo()">
+                <label>Data de Início</label>
+                <input type="date" id="global-inicio-lci" value="2026-01-01" onchange="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Data de Resgate</label>
+                <input type="date" id="global-fim-lci" value="2027-01-01" onchange="calcularTudo()">
+            </div>
+            <div class="global-group">
+                <label>Base de Rendimento</label>
+                <select id="global-base-lci" onchange="calcularTudo()">
+                    <option value="uteis">Dias Úteis (252/ano)</option>
+                    <option value="corridos" selected>Diário / Corridos (365/ano)</option>
+                </select>
             </div>
         </div>
 
@@ -424,6 +487,39 @@
             return 0.15;
         }
 
+        function obterAliquotaIOF(dias) {
+            const tabelaIOF = {
+                1: 0.96, 2: 0.93, 3: 0.90, 4: 0.86, 5: 0.83, 6: 0.80,
+                7: 0.76, 8: 0.73, 9: 0.70, 10: 0.66, 11: 0.63, 12: 0.60,
+                13: 0.56, 14: 0.53, 15: 0.50, 16: 0.46, 17: 0.43, 18: 0.40,
+                19: 0.36, 20: 0.33, 21: 0.30, 22: 0.26, 23: 0.23, 24: 0.20,
+                25: 0.16, 26: 0.13, 27: 0.10, 28: 0.06, 29: 0.03
+            };
+            if (dias <= 0) return 1.0;
+            if (dias >= 30) return 0.0;
+            return tabelaIOF[dias] !== undefined ? tabelaIOF[dias] : 0.0;
+        }
+
+        function calcularDiferencaDias(dataInicioStr, dataFimStr) {
+            const d1 = new Date(dataInicioStr + 'T00:00:00');
+            const d2 = new Date(dataFimStr + 'T00:00:00');
+            const diffTime = d2 - d1;
+            const diasCorridos = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+            
+            // Cálculo de dias úteis aproximado (segunda a sexta)
+            let diasUteis = 0;
+            let tempDate = new Date(d1);
+            while (tempDate < d2) {
+                tempDate.setDate(tempDate.getDate() + 1);
+                const dayOfWeek = tempDate.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    diasUteis++;
+                }
+            }
+            diasUteis = Math.max(1, diasUteis);
+            return { diasCorridos, diasUteis };
+        }
+
         async function buscarCDI() {
             try {
                 const response = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
@@ -457,8 +553,10 @@
                                 <div class="result-row"><span>Valor Bruto:</span> <span id="res-cdb-bruto-${index}">-</span></div>
                                 <div class="result-row"><span>Rendimentos:</span> <span id="res-cdb-lucro-${index}">-</span></div>
                                 <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cdb-mensal-${index}">-</span></div>
+                                <div class="result-row"><span>Alíquota IOF:</span> <span id="res-cdb-iof-aliq-${index}">-</span></div>
+                                <div class="result-row"><span>R$ IOF:</span> <span id="res-cdb-iof-val-${index}">-</span></div>
                                 <div class="result-row"><span>Alíquota IR:</span> <span id="res-cdb-ir-aliq-${index}">-</span></div>
-                                <div class="result-row"><span>R$ Imposto:</span> <span id="res-cdb-ir-val-${index}">-</span></div>
+                                <div class="result-row"><span>R$ Imposto IR:</span> <span id="res-cdb-ir-val-${index}">-</span></div>
                                 <div class="result-row highlight-liquido"><span>Valor Líquido:</span> <span id="res-cdb-liquido-${index}">-</span></div>
                                 <div class="result-row highlight-dif" id="box-cdb-dif-${index}" style="${index === 0 ? 'display:none;' : ''}">
                                     <span>Dif. p/ Cenário 1:</span> <span id="res-cdb-dif-${index}">-</span>
@@ -484,11 +582,11 @@
                                     <input type="number" step="0.5" id="rent-cdb-cx-ref" value="105" oninput="calcularTudo()">
                                 </div>
                                 <div class="result-group">
-                                    <div class="result-row"><span>Valor Bruto:</span> <span id="res-cx-cdb-bruto">ﯽ</span></div>
+                                    <div class="result-row"><span>Valor Bruto:</span> <span id="res-cx-cdb-bruto">-</span></div>
                                     <div class="result-row"><span>Rendimentos:</span> <span id="res-cx-cdb-lucro">-</span></div>
                                     <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cx-cdb-mensal">-</span></div>
-                                    <div class="result-row"><span>Alíquota IR:</span> <span id="res-cx-cdb-aliq">-</span></div>
-                                    <div class="result-row"><span>R$ Imposto:</span> <span id="res-cx-cdb-imposto">-</span></div>
+                                    <div class="result-row"><span>Alíq. IOF / IR:</span> <span id="res-cx-cdb-aliq">-</span></div>
+                                    <div class="result-row"><span>R$ Tributos:</span> <span id="res-cx-cdb-imposto">-</span></div>
                                     <div class="result-row highlight-liquido" style="background-color: #f1f5f9; border-color: #1b365d;">
                                         <span>Valor Líquido:</span> <span id="res-cx-cdb-liquido">-</span>
                                     </div>
@@ -507,11 +605,10 @@
                                     <div class="result-row"><span>Valor Bruto Total:</span> <span id="res-cx-bruto-${index}">-</span></div>
                                     <div class="result-row"><span>Rendimentos Totais:</span> <span id="res-cx-lucro-${index}">-</span></div>
                                     <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cx-mensal-${index}">-</span></div>
-                                    <div class="result-row"><span>Alíquota IR:</span> <span id="res-cx-ir-aliq-${index}">-</span></div>
-                                    <div class="result-row"><span>R$ Imposto:</span> <span id="res-cx-ir-val-${index}">-</span></div>
+                                    <div class="result-row"><span>Alíq. IOF / IR:</span> <span id="res-cx-ir-aliq-${index}">-</span></div>
+                                    <div class="result-row"><span>R$ Tributos:</span> <span id="res-cx-ir-val-${index}">-</span></div>
                                     <div class="result-row highlight-liquido" style="background-color: #f3e8ff; border-color: #8b5cf6;">
-                                        <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span>
-                                    </div>
+                                        <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span></div>
                                     <div id="badge-melhor-cx-${index}"></div>
                                 </div>
                             </div>
@@ -571,9 +668,15 @@
 
             // --- ABA 1: CDBs ---
             const valorCdb = parseFloat(document.getElementById('global-valor-cdb').value) || 0;
-            const diasCdb = parseInt(document.getElementById('global-dias-cdb').value) || 1;
-            const anosCdb = diasCdb / 365;
-            const mesesCdbAprox = diasCdb / 30;
+            const inicioCdb = document.getElementById('global-inicio-cdb').value;
+            const fimCdb = document.getElementById('global-fim-cdb').value;
+            const baseCdb = document.getElementById('global-base-cdb').value;
+
+            const { diasCorridos: diasCdb, diasUteis: diasUteisCdb } = calcularDiferencaDias(inicioCdb, fimCdb);
+            const numPeriodosCdb = baseCdb === 'uteis' ? diasUteisCdb : diasCdb;
+            const divisorAnualCdb = baseCdb === 'uteis' ? 252 : 365;
+            const anosCdb = numPeriodosCdb / divisorAnualCdb;
+            const mesesCdbAprox = diasCorridos / 30;
 
             let liquidoCdbBase = 0;
             let liquidosCdbArray = [];
@@ -587,9 +690,14 @@
                 const bruto = valorCdb * Math.pow((1 + rentAa), anosCdb);
                 const lucro = bruto - valorCdb;
 
-                const aliquotaIR = obterAliquotaIR(diasCdb);
-                const imposto = lucro * aliquotaIR;
-                const liquido = bruto - imposto;
+                const aliquotaIOF = obterAliquotaIOF(diasCorridos);
+                const valorIOF = lucro * aliquotaIOF;
+                const baseIR = Math.max(0, lucro - valorIOF);
+
+                const aliquotaIR = obterAliquotaIR(diasCorridos);
+                const valorIR = baseIR * aliquotaIR;
+
+                const liquido = bruto - valorIOF - valorIR;
                 const medioMensal = (liquido - valorCdb) / (mesesCdbAprox > 0 ? mesesCdbAprox : 1);
 
                 liquidosCdbArray.push(liquido);
@@ -598,8 +706,10 @@
                 document.getElementById(`res-cdb-bruto-${index}`).innerText = bruto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cdb-lucro-${index}`).innerText = lucro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cdb-mensal-${index}`).innerText = medioMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-iof-aliq-${index}`).innerText = (aliquotaIOF * 100).toFixed(0) + '%';
+                document.getElementById(`res-cdb-iof-val-${index}`).innerText = valorIOF.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cdb-ir-aliq-${index}`).innerText = (aliquotaIR * 100) + '%';
-                document.getElementById(`res-cdb-ir-val-${index}`).innerText = imposto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cdb-ir-val-${index}`).innerText = valorIR.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cdb-liquido-${index}`).innerText = liquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             });
 
@@ -614,10 +724,18 @@
 
             // --- ABA 2: CAIXINHAS COM TETO VS CDB ---
             const valorCxTotal = parseFloat(document.getElementById('global-valor-cx').value) || 0;
-            const diasCx = parseInt(document.getElementById('global-dias-cx').value) || 1;
-            const anosCx = diasCx / 365;
+            const inicioCx = document.getElementById('global-inicio-cx').value;
+            const fimCx = document.getElementById('global-fim-cx').value;
+            const baseCx = document.getElementById('global-base-cx').value;
+
+            const { diasCorridos: diasCx, diasUteis: diasUteisCx } = calcularDiferencaDias(inicioCx, fimCx);
+            const numPeriodosCx = baseCx === 'uteis' ? diasUteisCx : diasCx;
+            const divisorAnualCx = baseCx === 'uteis' ? 252 : 365;
+            const anosCx = numPeriodosCx / divisorAnualCx;
             const mesesCxAprox = diasCx / 30;
+
             const aliquotaIRCx = obterAliquotaIR(diasCx);
+            const aliquotaIOFCx = obterAliquotaIOF(diasCx);
 
             // Calcular o CDB tradicional de referência na aba 2
             const rentCdbCxInput = document.getElementById('rent-cdb-cx-ref');
@@ -625,16 +743,17 @@
             const rentCdbCxAa = cdiAnual * rentCdbCxPct;
             const brutoCdbCxRef = valorCxTotal * Math.pow((1 + rentCdbCxAa), anosCx);
             const lucroCdbCxRef = brutoCdbCxRef - valorCxTotal;
-            const impostoCdbCxRef = lucroCdbCxRef * aliquotaIRCx;
-            const liquidoCdbCxRef = brutoCdbCxRef - impostoCdbCxRef;
+            const iofCdbCxRef = lucroCdbCxRef * aliquotaIOFCx;
+            const irCdbCxRef = Math.max(0, lucroCdbCxRef - iofCdbCxRef) * aliquotaIRCx;
+            const liquidoCdbCxRef = brutoCdbCxRef - iofCdbCxRef - irCdbCxRef;
             const medioMensalCdbCxRef = (liquidoCdbCxRef - valorCxTotal) / (mesesCxAprox > 0 ? mesesCxAprox : 1);
 
             if (document.getElementById('res-cx-cdb-bruto')) {
                 document.getElementById('res-cx-cdb-bruto').innerText = brutoCdbCxRef.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('res-cx-cdb-lucro').innerText = lucroCdbCxRef.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('res-cx-cdb-mensal').innerText = medioMensalCdbCxRef.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById('res-cx-cdb-aliq').innerText = (aliquotaIRCx * 100) + '%';
-                document.getElementById('res-cx-cdb-imposto').innerText = impostoCdbCxRef.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('res-cx-cdb-aliq').innerText = `${(aliquotaIOFCx * 100).toFixed(0)}% IOF / ${(aliquotaIRCx * 100)}% IR`;
+                document.getElementById('res-cx-cdb-imposto').innerText = (iofCdbCxRef + irCdbCxRef).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('res-cx-cdb-liquido').innerText = liquidoCdbCxRef.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             }
 
@@ -655,8 +774,12 @@
                 const brutoTotal = brutoTeto + brutoAcima;
                 const lucroTotal = brutoTotal - valorCxTotal;
 
-                const impostoCx = lucroTotal * aliquotaIRCx;
-                const liquidoCx = brutoTotal - impostoCx;
+                const valorIOFCx = lucroTotal * aliquotaIOFCx;
+                const baseIRCx = Math.max(0, lucroTotal - valorIOFCx);
+                const valorIRCx = baseIRCx * aliquotaIRCx;
+                const totalTributosCx = valorIOFCx + valorIRCx;
+
+                const liquidoCx = brutoTotal - totalTributosCx;
                 const medioMensalCx = (liquidoCx - valorCxTotal) / (mesesCxAprox > 0 ? mesesCxAprox : 1);
 
                 document.getElementById(`res-cx-teto-lucro-${index}`).innerText = lucroTeto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -664,8 +787,8 @@
                 document.getElementById(`res-cx-bruto-${index}`).innerText = brutoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cx-lucro-${index}`).innerText = lucroTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cx-mensal-${index}`).innerText = medioMensalCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById(`res-cx-ir-aliq-${index}`).innerText = (aliquotaIRCx * 100) + '%';
-                document.getElementById(`res-cx-ir-val-${index}`).innerText = impostoCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-ir-aliq-${index}`).innerText = `${(aliquotaIOFCx * 100).toFixed(0)}% IOF / ${(aliquotaIRCx * 100)}% IR`;
+                document.getElementById(`res-cx-ir-val-${index}`).innerText = totalTributosCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cx-liquido-${index}`).innerText = liquidoCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
                 const badgeDiv = document.getElementById(`badge-melhor-cx-${index}`);
@@ -684,19 +807,28 @@
 
             // --- ABA 3: LCI / LCA ---
             const valorLci = parseFloat(document.getElementById('global-valor-lci').value) || 0;
-            const diasLci = parseInt(document.getElementById('global-dias-lci').value) || 1;
-            const anosLci = diasLci / 365;
-            const cdbBasePct = parseFloat(document.getElementById('cdb-base-rent').value) / 100 || 1.10;
+            const inicioLci = document.getElementById('global-inicio-lci').value;
+            const fimLci = document.getElementById('global-fim-lci').value;
+            const baseLci = document.getElementById('global-base-lci').value;
 
+            const { diasCorridos: diasLci, diasUteis: diasUteisLci } = calcularDiferencaDias(inicioLci, fimLci);
+            const numPeriodosLci = baseLci === 'uteis' ? diasUteisLci : diasLci;
+            const divisorAnualLci = baseLci === 'uteis' ? 252 : 365;
+            const anosLci = numPeriodosLci / divisorAnualLci;
+
+            const cdbBasePct = parseFloat(document.getElementById('cdb-base-rent').value) / 100 || 1.10;
             const rentCdbBaseAa = cdiAnual * cdbBasePct;
             const brutoCdbRef = valorLci * Math.pow((1 + rentCdbBaseAa), anosLci);
             const lucroCdbRef = brutoCdbRef - valorLci;
-            const aliquotaRef = obterAliquotaIR(diasLci);
-            const liquidoCdbRef = brutoCdbRef - (lucroCdbRef * aliquotaRef);
+            
+            const aliquotaIOFRef = obterAliquotaIOF(diasLci);
+            const aliquotaIRRef = obterAliquotaIR(diasLci);
+            const liquidoCdbRef = brutoCdbRef - (lucroCdbRef * aliquotaIOFRef) - (Math.max(0, lucroCdbRef - (lucroCdbRef * aliquotaIOFRef)) * aliquotaIRRef);
 
             dadosLci.forEach((dado, index) => {
                 const rentAa = cdiAnual * (dado.pct / 100);
-                const rentAm = Math.pow((1 + rentAa), (1 / 12)) - 1;
+                const divisorAm = baseLci === 'uteis' ? 21 : 12; // Aprox mês comercial
+                const rentAm = Math.pow((1 + rentAa), (1 / divisorAm)) - 1;
                 const liquidoLci = valorLci * Math.pow((1 + rentAa), anosLci);
                 const medioMensalLci = (liquidoLci - valorLci) / (diasLci / 30 > 0 ? diasLci / 30 : 1);
 
