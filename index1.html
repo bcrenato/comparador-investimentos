@@ -92,7 +92,7 @@
         /* Quadros Globais */
         .global-controls {
             background: var(--card-bg);
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto 25px auto;
             padding: 20px;
             border-radius: 12px;
@@ -129,7 +129,7 @@
 
         /* Painel Informativo de Impostos (IOF + IR) */
         .info-panel {
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto 25px auto;
             display: flex;
             gap: 15px;
@@ -321,7 +321,7 @@
     <!-- Painéis Informativos de Impostos -->
     <div class="info-panel">
         <div class="info-box">
-            <b>Tabela Regressiva de IR (Prazo Corrigido):</b>
+            <b>Tabela Regressiva de IR:</b>
             <table>
                 <tr><th>Prazo (Dias)</th><th>Alíquota</th></tr>
                 <tr><td>Até 180 dias</td><td>22,5%</td></tr>
@@ -332,7 +332,7 @@
         </div>
         <div class="info-box">
             <b>Tabela Regressiva de IOF (Até 29 dias):</b>
-            <table style="font-size: 0.75rem;">
+            <table style="font-size: 0.73rem;">
                 <tr><th>1º: 96% | 2º: 93% | 3º: 90%</th><th>4º: 86% | 5º: 83% | 6º: 80%</th></tr>
                 <tr><th>7º: 76% | 8º: 73% | 9º: 70%</th><th>10º: 66% | 11º: 63% | 12º: 60%</th></tr>
                 <tr><th>13º: 56% | 14º: 53% | 15º: 50%</th><th>16º: 46% | 17º: 43% | 18º: 40%</th></tr>
@@ -506,7 +506,6 @@
             const diffTime = d2 - d1;
             const diasCorridos = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
             
-            // Cálculo de dias úteis aproximado (segunda a sexta)
             let diasUteis = 0;
             let tempDate = new Date(d1);
             while (tempDate < d2) {
@@ -536,7 +535,7 @@
             }
         }
 
-        function renderizarTudo() {
+        function renderizarEstruturas() {
             // Renderizar Aba CDB
             const containerCdb = document.getElementById('cards-container-cdb');
             containerCdb.innerHTML = '';
@@ -608,7 +607,8 @@
                                     <div class="result-row"><span>Alíq. IOF / IR:</span> <span id="res-cx-ir-aliq-${index}">-</span></div>
                                     <div class="result-row"><span>R$ Tributos:</span> <span id="res-cx-ir-val-${index}">-</span></div>
                                     <div class="result-row highlight-liquido" style="background-color: #f3e8ff; border-color: #8b5cf6;">
-                                        <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span></div>
+                                        <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span>
+                                    </div>
                                     <div id="badge-melhor-cx-${index}"></div>
                                 </div>
                             </div>
@@ -652,13 +652,13 @@
 
         function adicionarCardCdb() {
             dadosCdb.push({ rent: 115 });
-            renderizarTudo();
+            renderizarEstruturas();
         }
 
         function removerCardCdb() {
             if (dadosCdb.length > 1) {
                 dadosCdb.pop();
-                renderizarTudo();
+                renderizarEstruturas();
             }
         }
 
@@ -676,7 +676,7 @@
             const numPeriodosCdb = baseCdb === 'uteis' ? diasUteisCdb : diasCdb;
             const divisorAnualCdb = baseCdb === 'uteis' ? 252 : 365;
             const anosCdb = numPeriodosCdb / divisorAnualCdb;
-            const mesesCdbAprox = diasCorridos / 30;
+            const mesesCdbAprox = diasCdb / 30;
 
             let liquidoCdbBase = 0;
             let liquidosCdbArray = [];
@@ -690,11 +690,11 @@
                 const bruto = valorCdb * Math.pow((1 + rentAa), anosCdb);
                 const lucro = bruto - valorCdb;
 
-                const aliquotaIOF = obterAliquotaIOF(diasCorridos);
+                const aliquotaIOF = obterAliquotaIOF(diasCdb);
                 const valorIOF = lucro * aliquotaIOF;
                 const baseIR = Math.max(0, lucro - valorIOF);
 
-                const aliquotaIR = obterAliquotaIR(diasCorridos);
+                const aliquotaIR = obterAliquotaIR(diasCdb);
                 const valorIR = baseIR * aliquotaIR;
 
                 const liquido = bruto - valorIOF - valorIR;
@@ -717,8 +717,10 @@
                 if (index > 0) {
                     const dif = liquidosCdbArray[index] - liquidoCdbBase;
                     const span = document.getElementById(`res-cdb-dif-${index}`);
-                    span.innerText = (dif >= 0 ? "+ " : "- ") + Math.abs(dif).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    span.style.color = dif >= 0 ? "#008742" : "#d93838";
+                    if (span) {
+                        span.innerText = (dif >= 0 ? "+ " : "- ") + Math.abs(dif).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                        span.style.color = dif >= 0 ? "#008742" : "#d93838";
+                    }
                 }
             });
 
@@ -737,7 +739,6 @@
             const aliquotaIRCx = obterAliquotaIR(diasCx);
             const aliquotaIOFCx = obterAliquotaIOF(diasCx);
 
-            // Calcular o CDB tradicional de referência na aba 2
             const rentCdbCxInput = document.getElementById('rent-cdb-cx-ref');
             const rentCdbCxPct = rentCdbCxInput ? (parseFloat(rentCdbCxInput.value) / 100 || 1.05) : 1.05;
             const rentCdbCxAa = cdiAnual * rentCdbCxPct;
@@ -827,7 +828,7 @@
 
             dadosLci.forEach((dado, index) => {
                 const rentAa = cdiAnual * (dado.pct / 100);
-                const divisorAm = baseLci === 'uteis' ? 21 : 12; // Aprox mês comercial
+                const divisorAm = baseLci === 'uteis' ? 21 : 12;
                 const rentAm = Math.pow((1 + rentAa), (1 / divisorAm)) - 1;
                 const liquidoLci = valorLci * Math.pow((1 + rentAa), anosLci);
                 const medioMensalLci = (liquidoLci - valorLci) / (diasLci / 30 > 0 ? diasLci / 30 : 1);
@@ -838,19 +839,21 @@
                 document.getElementById(`res-lci-mensal-${index}`).innerText = medioMensalLci.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
                 const badgeDiv = document.getElementById(`badge-melhor-${index}`);
-                if (liquidoLci > liquidoCdbRef) {
-                    const diff = liquidoLci - liquidoCdbRef;
-                    badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #e6f9ed; color: #008742; border: 1px solid #00d26a;">✔ Melhor: LCI/LCA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
-                } else if (liquidoLci < liquidoCdbRef) {
-                    const diff = liquidoCdbRef - liquidoLci;
-                    badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;">✖ Melhor: Seu CDB (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
-                } else {
-                    badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #f1f5f9; color: #475569;">Empate exato</div>`;
+                if (badgeDiv) {
+                    if (liquidoLci > liquidoCdbRef) {
+                        const diff = liquidoLci - liquidoCdbRef;
+                        badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #e6f9ed; color: #008742; border: 1px solid #00d26a;">✔ Melhor: LCI/LCA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
+                    } else if (liquidoLci < liquidoCdbRef) {
+                        const diff = liquidoCdbRef - liquidoLci;
+                        badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;">✖ Melhor: Seu CDB (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
+                    } else {
+                        badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #f1f5f9; color: #475569;">Empate exato</div>`;
+                    }
                 }
             });
         }
 
-        renderizarTudo();
+        renderizarEstruturas();
         buscarCDI();
     </script>
 </body>
