@@ -406,8 +406,8 @@
             <div class="global-group">
                 <label>Base de Rendimento</label>
                 <select id="global-base-cdb" onchange="calcularTudo()">
-                    <option value="uteis" selected>Dias Úteis (252/ano)</option>
-                    <option value="corridos">Diário / Corridos (365/ano)</option>
+                    <option value="uteis">Dias Úteis (252/ano)</option>
+                    <option value="corridos" selected>Diário / Corridos (365/ano)</option>
                 </select>
             </div>
         </div>
@@ -425,11 +425,11 @@
         <div class="global-controls">
             <div class="global-group">
                 <label>Valor Total (R$)</label>
-                <input type="number" step="1000" id="global-valor-cx" value="2000.25" oninput="calcularTudo()">
+                <input type="number" step="1000" id="global-valor-cx" value="2000" oninput="calcularTudo()">
             </div>
             <div class="global-group">
                 <label>Data de Início</label>
-                <input type="date" id="global-inicio-cx" value="2026-08-27" onchange="calcularTudo()">
+                <input type="date" id="global-inicio-cx" value="2026-01-01" onchange="calcularTudo()">
             </div>
             <div class="global-group">
                 <div class="header-resgate-flex">
@@ -438,21 +438,23 @@
                 </div>
                 <div id="container-resgate-cx" style="margin-top: 4px;">
                     <select id="global-prazo-cx" onchange="calcularTudo()">
-                        <option value="30" selected>30 Dias (1 Mês)</option>
+                        <option value="30">30 Dias (1 Mês)</option>
                         <option value="60">60 Dias (2 Meses)</option>
                         <option value="90">90 Dias (3 Meses)</option>
                         <option value="180">180 Dias (6 Meses)</option>
-                        <option value="365">365 Dias (1 Ano)</option>
+                        <option value="365" selected>365 Dias (1 Ano)</option>
                         <option value="730">730 Dias (2 Anos)</option>
+                        <option value="1095">1095 Dias (3 Anos)</option>
+                        <option value="1825">1825 Dias (5 Anos)</option>
                     </select>
                 </div>
                 <span id="preview-data-cx" class="preview-data-resgate">Resgate em: --/--/----</span>
             </div>
             <div class="global-group">
-                <label>Base de Rendimento (Caixinha)</label>
+                <label>Base de Rendimento Caixinha</label>
                 <select id="global-base-cx" onchange="calcularTudo()">
-                    <option value="corridos" selected>Diário / Corridos (365/ano - Finais de semana)</option>
                     <option value="uteis">Dias Úteis (252/ano)</option>
+                    <option value="corridos" selected>Diário / Corridos (365/ano - Fins de semana)</option>
                 </select>
             </div>
         </div>
@@ -500,8 +502,8 @@
             <div class="global-group">
                 <label>Base de Rendimento</label>
                 <select id="global-base-lci" onchange="calcularTudo()">
-                    <option value="uteis" selected>Dias Úteis (252/ano)</option>
-                    <option value="corridos">Diário / Corridos (365/ano)</option>
+                    <option value="uteis">Dias Úteis (252/ano)</option>
+                    <option value="corridos" selected>Diário / Corridos (365/ano)</option>
                 </select>
             </div>
         </div>
@@ -525,7 +527,8 @@
         ];
 
         let dadosCaixinha = [
-            { label: "Caixinha 120% (Ex: Nubank)", teto: 99999999, taxaTeto: 120 },
+            { label: "Caixinha 120% (Teto R$ 5mil)", teto: 5000, taxaTeto: 120 },
+            { label: "Caixinha 115% (Teto R$ 10mil)", teto: 10000, taxaTeto: 115 },
             { label: "CDB Tradicional", isCdb: true }
         ];
 
@@ -735,14 +738,15 @@
                             <div class="card-header" style="background: #8b5cf6;">${dado.label}</div>
                             <div class="card-body">
                                 <div class="result-group" style="margin-top: 0; border-top: none;">
+                                    <div class="result-row"><span>Até R$ ${dado.teto.toLocaleString('pt-BR')} (${dado.taxaTeto}%):</span> <span id="res-cx-teto-lucro-${index}">-</span></div>
+                                    <div class="result-row"><span>Acima do Teto (100%):</span> <span id="res-cx-acima-lucro-${index}">-</span></div>
                                     <div class="result-row"><span>Valor Bruto Total:</span> <span id="res-cx-bruto-${index}">-</span></div>
                                     <div class="result-row"><span>Rendimentos Totais:</span> <span id="res-cx-lucro-${index}">-</span></div>
                                     <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-cx-mensal-${index}">-</span></div>
                                     <div class="result-row"><span>Alíq. IOF / IR:</span> <span id="res-cx-ir-aliq-${index}">-</span></div>
                                     <div class="result-row"><span>R$ Tributos:</span> <span id="res-cx-ir-val-${index}">-</span></div>
                                     <div class="result-row highlight-liquido" style="background-color: #f3e8ff; border-color: #8b5cf6;">
-                                        <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span>
-                                    </div>
+                                        <span>Valor Líquido:</span> <span id="res-cx-liquido-${index}">-</span></div>
                                     <div id="badge-melhor-cx-${index}"></div>
                                 </div>
                             </div>
@@ -763,8 +767,7 @@
                                 <div class="result-row"><span>Rent. a.a:</span> <span id="res-lci-aa-${index}">-</span></div>
                                 <div class="result-row highlight-mensal"><span>Rent. a.m:</span> <span id="res-lci-am-${index}">-</span></div>
                                 <div class="result-row highlight-liquido" style="background-color: #e0f2fe; border-color: #0284c7;">
-                                    <span>Valor Líquido (Isento):</span> <span id="res-lci-liquido-${index}">-</span>
-                                </div>
+                                    <span>Valor Líquido (Isento):</span> <span id="res-lci-liquido-${index}">-</span></div>
                                 <div class="result-row highlight-mensal"><span>R$ / Mês (Médio):</span> <span id="res-lci-mensal-${index}">-</span></div>
                                 <div id="badge-melhor-${index}"></div>
                             </div>
@@ -857,7 +860,7 @@
                 }
             });
 
-            // --- ABA 2: CAIXINHAS VS CDB ---
+            // --- ABA 2: CAIXINHAS COM TETO VS CDB ---
             const valorCxTotal = parseFloat(document.getElementById('global-valor-cx').value) || 0;
             const inicioCx = document.getElementById('global-inicio-cx').value || '2026-01-01';
             const calcCx = processarParametrosDatas('cx', inicioCx);
@@ -872,9 +875,7 @@
             const aliquotaIOFCx = obterAliquotaIOF(calcCx.diasCorridos);
 
             const rentCdbCxInput = document.getElementById('rent-cdb-cx-ref');
-            const rentCdbCxPct = rentCdbCxInput ? (parseFloat(rentCdbCxInput.value) / 100 || 1.0) : 1.0;
-            
-            // O CDB de referência na aba 2 usa a mesma base selecionada para a caixinha
+            const rentCdbCxPct = rentCdbCxInput ? (parseFloat(rentCdbCxInput.value) / 100 || 1.00) : 1.00;
             const rentCdbCxAa = cdiAnual * rentCdbCxPct;
             const brutoCdbCxRef = valorCxTotal * Math.pow((1 + rentCdbCxAa), anosCx);
             const lucroCdbCxRef = brutoCdbCxRef - valorCxTotal;
@@ -895,8 +896,18 @@
             dadosCaixinha.forEach((dado, index) => {
                 if (dado.isCdb) return;
 
+                let valorNoTeto = Math.min(valorCxTotal, dado.teto);
+                let valorAcimaTeto = Math.max(0, valorCxTotal - dado.teto);
+
                 const rentTetoAa = cdiAnual * (dado.taxaTeto / 100);
-                const brutoTotal = valorCxTotal * Math.pow((1 + rentTetoAa), anosCx);
+                const brutoTeto = valorNoTeto * Math.pow((1 + rentTetoAa), anosCx);
+                const lucroTeto = brutoTeto - valorNoTeto;
+
+                const rentAcimaAa = cdiAnual * 1.00;
+                const brutoAcima = valorAcimaTeto * Math.pow((1 + rentAcimaAa), anosCx);
+                const lucroAcima = brutoAcima - valorAcimaTeto;
+
+                const brutoTotal = brutoTeto + brutoAcima;
                 const lucroTotal = brutoTotal - valorCxTotal;
 
                 const valorIOFCx = lucroTotal * aliquotaIOFCx;
@@ -907,6 +918,8 @@
                 const liquidoCx = brutoTotal - totalTributosCx;
                 const medioMensalCx = (liquidoCx - valorCxTotal) / (mesesCxAprox > 0 ? mesesCxAprox : 1);
 
+                document.getElementById(`res-cx-teto-lucro-${index}`).innerText = lucroTeto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById(`res-cx-acima-lucro-${index}`).innerText = lucroAcima.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cx-bruto-${index}`).innerText = brutoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cx-lucro-${index}`).innerText = lucroTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById(`res-cx-mensal-${index}`).innerText = medioMensalCx.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -966,7 +979,7 @@
                         badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #e6f9ed; color: #008742; border: 1px solid #00d26a;">✔ Melhor: LCI/LCA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
                     } else if (liquidoLci < liquidoCdbRef) {
                         const diff = liquidoCdbRef - liquidoLci;
-                        badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;">✖ Melhor: Seu CDB (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</div>`;
+                        badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;">✖ Melhor: Seu CDB (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
                     } else {
                         badgeDiv.innerHTML = `<div class="badge-melhor" style="background-color: #f1f5f9; color: #475569;">Empate exato</div>`;
                     }
