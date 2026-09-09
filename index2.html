@@ -411,8 +411,8 @@
                 </select>
             </div>
             <div class="global-group">
-                <label>Feriados (Rendeu como útil)</label>
-                <input type="text" id="global-feriados-cdb" value="2026-09-07" placeholder="AAAA-MM-DD, AAAA-MM-DD" oninput="calcularTudo()">
+                <label>Feriados (Excluídos dos úteis)</label>
+                <input type="text" id="global-feriados-cdb" value="2026-04-21, 2026-05-01, 2026-06-04, 2026-09-07, 2026-10-12, 2026-11-02, 2026-11-15, 2026-11-20, 2026-12-25" placeholder="AAAA-MM-DD, AAAA-MM-DD" oninput="calcularTudo()">
             </div>
         </div>
 
@@ -462,8 +462,8 @@
                 </select>
             </div>
             <div class="global-group">
-                <label>Feriados (Rendeu como útil)</label>
-                <input type="text" id="global-feriados-cx" value="2026-09-07" placeholder="AAAA-MM-DD, AAAA-MM-DD" oninput="calcularTudo()">
+                <label>Feriados (Excluídos dos úteis)</label>
+                <input type="text" id="global-feriados-cx" value="2026-04-21, 2026-05-01, 2026-06-04, 2026-09-07, 2026-10-12, 2026-11-02, 2026-11-15, 2026-11-20, 2026-12-25" placeholder="AAAA-MM-DD, AAAA-MM-DD" oninput="calcularTudo()">
             </div>
         </div>
 
@@ -515,8 +515,8 @@
                 </select>
             </div>
             <div class="global-group">
-                <label>Feriados (Rendeu como útil)</label>
-                <input type="text" id="global-feriados-lci" value="2026-09-07" placeholder="AAAA-MM-DD, AAAA-MM-DD" oninput="calcularTudo()">
+                <label>Feriados (Excluídos dos úteis)</label>
+                <input type="text" id="global-feriados-lci" value="2026-04-21, 2026-05-01, 2026-06-04, 2026-09-07, 2026-10-12, 2026-11-02, 2026-11-15, 2026-11-20, 2026-12-25" placeholder="AAAA-MM-DD, AAAA-MM-DD" oninput="calcularTudo()">
             </div>
         </div>
 
@@ -670,15 +670,16 @@
                 tempDate.setDate(tempDate.getDate() + 1);
                 const dayOfWeek = tempDate.getDay();
                 
-                // Formata data atual para comparar com string YYYY-MM-DD
                 const ano = tempDate.getFullYear();
                 const mes = String(tempDate.getMonth() + 1).padStart(2, '0');
                 const dia = String(tempDate.getDate()).padStart(2, '0');
                 const dataIsoStr = `${ano}-${mes}-${dia}`;
 
-                // É considerado dia de rendimento se for dia útil (seg-sex) OU se estiver na lista de feriados forçados
-                const ehFeriadoForcado = listaFeriados.includes(dataIsoStr);
-                if ((dayOfWeek !== 0 && dayOfWeek !== 6) || ehFeriadoForcado) {
+                const ehFimDeSemana = (dayOfWeek === 0 || dayOfWeek === 6);
+                const ehFeriado = listaFeriados.includes(dataIsoStr);
+
+                // O dia útil só conta se NÃO for fim de semana E NÃO for feriado
+                if (!ehFimDeSemana && !ehFeriado) {
                     diasUteis++;
                 }
             }
